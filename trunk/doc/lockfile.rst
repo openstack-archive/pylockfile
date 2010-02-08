@@ -12,8 +12,8 @@
 
 .. note::
 
-   This module is very definitely alpha.  It is quite possible that the API
-   and implementation will change in important ways as people test it and
+   This module is alpha software.  It is quite possible that the API and
+   implementation will change in important ways as people test it and
    provide feedback and bug fixes.  In particular, if the mkdir-based
    locking scheme is sufficient for both Windows and Unix platforms, the
    link-based scheme may be deleted so that only a single locking scheme is
@@ -24,8 +24,10 @@
    The implementation uses the :statement:`with` statement, both in the
    tests and in the main code, so will only work out-of-the-box with Python
    2.5 or later.  However, the use of the :statement:`with` statement is
-   minimal, so if you apply the patch in the file 2.4.diff (which
-   accompanies the distribution) you can use it with Python 2.4.
+   minimal, so if you apply the patch in the included 2.4.diff file you can
+   use it with Python 2.4.  It's possible that it will work in Python 2.3
+   with that patch applied, though the doctest code relies on APIs new in
+   2.4, so will have to be rewritten somewhat to allow testing on 2.3.
 
 The :mod:`lockfile` module exports a :class:`FileLock` class which provides
 a simple API for locking files.  Unlike the Windows :func:`msvcrt.locking`
@@ -42,14 +44,13 @@ Windows) system calls.
    this point it's not clear that using the :func:`os.mkdir` method would be
    insufficient on Unix systems.  If it proves to be adequate on Unix then
    the implementation could be simplified and truly cross-platform locking
-   would be possible.  (It's mostly possible now, but the :func:`break_lock`
-   method needs some work.)
+   would be possible.
 
 .. note::
 
    The current implementation doesn't provide for shared vs. exclusive
-   locks.  It should be possible for multiple reader processes to lock a
-   file at the same time.
+   locks.  It should be possible for multiple reader processes to hold the
+   lock at the same time.
 
 The module defines the following exceptions:
 
@@ -94,17 +95,34 @@ The module defines the following exceptions:
    This exception is raised if the file is locked by another thread or
    process when :func:`LockFile.release` is called.
 
-The following class is provided:
+The following classes are provided:
 
+.. class:: LinkFileLock(path, threaded=True)
 
-.. class:: FileLock(path, threaded=True)
+   This class uses the :func:`link(2)` system call as the basic lock
+   mechanism.  *path* is an object in the file system to be locked.  It need
+   not exist, but its directory must exist and be writable at the time the
+   :func:`acquire` and :func:`release` methods are called.  *threaded* is
+   optional, but when set to :const:`True` locks will be distinguished
+   between threads in the same process.
 
-   *path* is an object in the file system to be locked.  It need not exist,
-   but its directory must exist and be writable at the time the
-   :func:`acquire` and :func:`release` methods are called.
-   *threaded* is optional, but when set to :const:`True` locks will be
-   distinguished between threads in the same process.
+.. class:: MkdirFileLock(path, threaded=True)
 
+   This class uses the :func:`mkdir(2)` system call as the basic lock
+   mechanism.  The parameters have the same meaning as for the
+   :class:`LinkFileLock` class.
+
+.. class:: SQLiteFileLock(path, threaded=True)
+
+   This class uses the :mod:`sqlite3` module to implement the lock
+   mechanism.  The parameters have the same meaning as for the
+   :class:`LinkFileLock` class.
+
+By default, the :const:`FileLock` variable refers to the
+:class:`LinkFileLock` class on Unix (including Linux and Mac) systems.  On
+Windows it refers to the :class:`MkdirFileLock` class.
+
+The 
 .. note::
 
    ... Describe on-disk lock file structure here ...
@@ -128,8 +146,7 @@ Implementing Other Locking Schemes
 There is a :class:`_FileLock` base class which can be used as the foundation
 for other locking schemes.  For example, if shared filesystems are not
 available, :class:`_FileLock` could be subclassed to provide locking via an
-SQL database.  There is an example SQLiteFileLock class which uses an SQLite
-file database as the underlying lock mechanism.
+SQL database.
 
 FileLock Objects
 ----------------
@@ -177,7 +194,7 @@ This example is the "hello world" for the :mod:`lockfile` module::
     with lock:
         print lock.path, 'is locked.'
 
-To use this with versions of Python before 2.5, you can execute::
+To use this with Python 2.4, you can execute::
 
     lock = FileLock("/some/file/or/other")
     lock.acquire()
@@ -202,9 +219,9 @@ Other Libraries
 The idea of implementing advisory locking with a standard API is not new
 with :mod:`lockfile`.  There are a number of other libraries available:
 
-* locknix - from Barry Warsaw via Mailman - Unix only
+* locknix - http://pypi.python.org/pypi/locknix - Unix only
 * mx.MiscLockFile - from Marc André Lemburg, part of the mx.Base
   distribution - cross-platform.
 * Twisted - http://twistedmatrix.com/trac/browser/trunk/twisted/python/lockfile.py
-* http://pypi.python.org/pypi/zc.lockfile
+* zc.lockfile - http://pypi.python.org/pypi/zc.lockfile
 
