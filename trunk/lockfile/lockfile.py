@@ -56,6 +56,7 @@ import threading
 import time
 import errno
 import urllib
+import thread
 
 class Error(Exception):
     """
@@ -151,8 +152,7 @@ class _FileLock:
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:
-            tname = "%s-" % urllib.quote(threading.currentThread().getName(),
-                                         safe='')
+            tname = "%x-" % thread.get_ident()
         else:
             tname = ""
         dirname = os.path.dirname(self.lock_file)
@@ -417,8 +417,7 @@ class MkdirFileLock(_FileLock):
         """
         _FileLock.__init__(self, path)
         if threaded:
-            tname = "%s-" % urllib.quote(threading.currentThread().getName(),
-                                         safe='')
+            tname = "%x-" % thread.get_ident()
         else:
             tname = ""
         # Lock file itself is a directory.  Place the unique file name into
@@ -666,7 +665,7 @@ if __name__ == "__main__":
 
     if hasattr(os, "mkdir"):
         FileLock = MkdirFileLock
-        test_object(_FileLock)
+        f, t = test_object(_FileLock)
         nfailed += f
         ntests += t
 
@@ -676,7 +675,7 @@ if __name__ == "__main__":
         print "SQLite3 not available to test with."
     else:
         FileLock = SQLiteFileLock
-        test_object(_FileLock)
+        f, t = test_object(_FileLock)
         nfailed += f
         ntests += t
 
