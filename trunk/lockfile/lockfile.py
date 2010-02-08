@@ -353,12 +353,7 @@ class _FileLock:
         self.release()
 
 class LinkFileLock(_FileLock):
-    """
-    Lock access to a file using atomic property of link(2).
-
-    The name of the file to be locked is input.  The lock file will have a
-    '.lock' extension added to it.
-    """
+    """Lock access to a file using atomic property of link(2)."""
 
     def acquire(self, timeout=None):
         try:
@@ -415,11 +410,7 @@ class LinkFileLock(_FileLock):
             os.unlink(self.lock_file)
 
 class MkdirFileLock(_FileLock):
-    """Lock file by creating a directory.
-
-    I can't actually test this implementation on Windows as I don't do
-    Windows.
-    """
+    """Lock file by creating a directory."""
     def __init__(self, path, threaded=True):
         """
         >>> lock = MkdirFileLock(_testfile())
