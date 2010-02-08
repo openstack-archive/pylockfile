@@ -26,7 +26,7 @@
    2.5 or later.  However, the use of the :keyword:`with` statement is
    minimal, so if you apply the patch in the included 2.4.diff file you can
    use it with Python 2.4.  It's possible that it will work in Python 2.3
-   with that patch applied as well , though the doctest code relies on APIs
+   with that patch applied as well, though the doctest code relies on APIs
    new in 2.4, so will have to be rewritten somewhat to allow testing on
    2.3.  As they say, patches welcome. ;-)
 
