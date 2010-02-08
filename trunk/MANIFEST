@@ -1,6 +1,6 @@
 LICENSE
 MANIFEST
 README
+lockfile.py
 setup.py
 doc/lockfile.rst
-src/lockfile.py
