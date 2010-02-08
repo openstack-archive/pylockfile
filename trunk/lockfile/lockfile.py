@@ -366,6 +366,23 @@ class LinkFileLock(LockBase):
     """Lock access to a file using atomic property of link(2)."""
 
     def acquire(self, timeout=None):
+        """
+        >>> d = _testfile()
+        >>> os.mkdir(d)
+        >>> os.chmod(d, 0444)
+        >>> try:
+        ...   lock = LinkFileLock(os.path.join(d, 'test'))
+        ...   try:
+        ...     lock.acquire()
+        ...   except LockFailed:
+        ...     pass
+        ...   else:
+        ...     lock.release()
+        ...     print 'erroneously locked', os.path.join(d, 'test')
+        ... finally:
+        ...   os.chmod(d, 0664)
+        ...   os.rmdir(d)
+        """
         try:
             open(self.unique_name, "wb").close()
         except IOError:
@@ -554,7 +571,7 @@ class SQLiteFileLock(LockBase):
                 if len(rows) > 1:
                     # Nope.  Someone else got there.  Remove our lock.
                     cursor.execute("delete from locks"
-                                   "  where threadid = ?",
+                                   "  where unique_name = ?",
                                    (self.unique_name,))
                     self.connection.commit()
                 else:
@@ -665,14 +682,17 @@ def _test():
     import sys
 
     def test_object(c):
-        tests = doctest.DocTestFinder().find(c)
-        runner = doctest.DocTestRunner(verbose="-v" in sys.argv)
-        tests.sort(key = lambda test: test.name)
         nfailed = ntests = 0
-        for test in tests:
-            f, t = runner.run(test)
-            nfailed += f
-            ntests += t
+        for (obj, recurse) in ((c, True),
+                               (LockBase, True),
+                               (sys.modules["__main__"], False)):
+            tests = doctest.DocTestFinder(recurse=recurse).find(obj)
+            runner = doctest.DocTestRunner(verbose="-v" in sys.argv)
+            tests.sort(key = lambda test: test.name)
+            for test in tests:
+                f, t = runner.run(test)
+                nfailed += f
+                ntests += t
         print FileLock.__name__, "tests:", ntests, "failed:", nfailed
         return nfailed, ntests
 
@@ -680,13 +700,13 @@ def _test():
 
     if hasattr(os, "link"):
         FileLock = LinkFileLock
-        f, t = test_object(sys.modules["__main__"])
+        f, t = test_object(FileLock)
         nfailed += f
         ntests += t
 
     if hasattr(os, "mkdir"):
         FileLock = MkdirFileLock
-        f, t = test_object(sys.modules["__main__"])
+        f, t = test_object(FileLock)
         nfailed += f
         ntests += t
 
@@ -698,7 +718,7 @@ def _test():
         print "Testing SQLiteFileLock with sqlite", sqlite3.sqlite_version,
         print "& pysqlite", sqlite3.version
         FileLock = SQLiteFileLock
-        f, t = test_object(sys.modules["__main__"])
+        f, t = test_object(FileLock)
         nfailed += f
         ntests += t
 
