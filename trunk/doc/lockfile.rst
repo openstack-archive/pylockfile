@@ -120,9 +120,8 @@ Implementing Other Locking Schemes
 There is a :class:`_FileLock` base class which can be used as the foundation
 for other locking schemes.  For example, if shared filesystems are not
 available, :class:`_FileLock` could be subclassed to provide locking via an
-SQL database.  There are some limitations in the test cases which would have
-to be resolved (looking for particular files in the filesystem, for
-example).
+SQL database.  There is an example SQLiteFileLock class which uses an SQLite
+file database as the underlying lock mechanism.
 
 FileLock Objects
 ----------------
