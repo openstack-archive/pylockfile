@@ -21,9 +21,9 @@
 
 .. note::
 
-   The implementation uses the :statement:`with` statement, both in the
+   The implementation uses the :keyword:`with` statement, both in the
    tests and in the main code, so will only work out-of-the-box with Python
-   2.5 or later.  However, the use of the :statement:`with` statement is
+   2.5 or later.  However, the use of the :keyword:`with` statement is
    minimal, so if you apply the patch in the included 2.4.diff file you can
    use it with Python 2.4.  It's possible that it will work in Python 2.3
    with that patch applied as well , though the doctest code relies on APIs
@@ -164,8 +164,8 @@ by the statement:`with` statement.  The timeout option is not supported when
 used in this fashion.  While support for timeouts could be implemented,
 there is no support for handling the eventual :exc:`Timeout` exceptions
 raised by the :func:`__enter__` method, so you would have to protect the
-:stmt:`with` statement with a :stmt:`try` statement.  The resulting
-construct would not be much simpler than just using a :stmt:`try` statement
+:keyword:`with` statement with a :keyword:`try` statement.  The resulting
+construct would not be much simpler than just using a :keyword:`try` statement
 in the first place.
 
 :class:`FileLock` has the following user-visible methods:
@@ -234,8 +234,7 @@ The idea of implementing advisory locking with a standard API is not new
 with :mod:`lockfile`.  There are a number of other libraries available:
 
 * locknix - http://pypi.python.org/pypi/locknix - Unix only
-* mx.MiscLockFile - from Marc André Lemburg, part of the mx.Base
+* mx.MiscLockFile - from Marc AndrÃ© Lemburg, part of the mx.Base
   distribution - cross-platform.
 * Twisted - http://twistedmatrix.com/trac/browser/trunk/twisted/python/lockfile.py
 * zc.lockfile - http://pypi.python.org/pypi/zc.lockfile
-
