@@ -1,0 +1,61 @@
+diff -r 25fb6afabf14 lockfile.py
+--- a/lockfile.py	Fri Nov 16 06:41:54 2007 -0600
++++ lockfile/lockfile.py	Fri Nov 16 06:58:05 2007 -0600
+@@ -23,9 +24,9 @@ True
+ >>> lock = FileLock(_testfile())
+ >>> print lock.is_locked()
+ False
+->>> with lock:
+-...    print lock.is_locked()
+-True
++## >>> with lock:
++## ...    print lock.is_locked()
++## True
+ >>> print lock.is_locked()
+ False
+ 
+@@ -47,7 +48,7 @@ To do:
+     * Actually test MkdirFileLock class on Windows
+ """
+ 
+-from __future__ import division, with_statement
++from __future__ import division###, with_statement
+ 
+ import socket
+ import os
+@@ -331,13 +332,13 @@ class _FileLock:
+     def __enter__(self):
+         """Context manager support.
+ 
+-        >>> lock = FileLock(_testfile())
+-        >>> with lock:
+-        ...   lock.is_locked()
+-        ...
+-        True
+-        >>> lock.is_locked()
+-        False
++        # >>> lock = FileLock(_testfile())
++        # >>> with lock:
++        # ...   lock.is_locked()
++        # ...
++        # True
++        # >>> lock.is_locked()
++        # False
+         """
+         self.acquire()
+         return self
+@@ -631,8 +632,13 @@ def _lock_sleep2_unlock():
+ def _lock_sleep2_unlock():
+     # Lock from another thread.
+     lock = FileLock(_testfile())
+-    with lock:
++    lock.acquire()
++    try:
+         time.sleep(2.0)
++    finally:
++        lock.release()
++##     with lock:
++##         time.sleep(2.0)
+ 
+ def _test():
+     global FileLock

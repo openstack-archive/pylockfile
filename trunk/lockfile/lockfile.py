@@ -180,8 +180,9 @@ class _FileLock:
         >>> lock.release()
 
         >>> # No timeout test
-        >>> t = _after(0, _lock_sleep2_unlock)
-        >>> time.sleep(0.05)
+        >>> e1, e2 = threading.Event(), threading.Event()
+        >>> t = _in_thread(_lock_wait_unlock, e1, e2)
+        >>> e1.wait()         # wait for thread t to acquire lock
         >>> lock2 = FileLock(_testfile())
         >>> lock2.is_locked()
         True
@@ -198,11 +199,13 @@ class _FileLock:
         ...   print 'erroneously locked an already locked file.'
         ...   lock2.release()
         ...
+        >>> e2.set()          # tell thread t to release lock
         >>> t.join()
 
         >>> # Timeout test
-        >>> t = _after(0, _lock_sleep2_unlock)
-        >>> time.sleep(0.05)
+        >>> e1, e2 = threading.Event(), threading.Event()
+        >>> t = _in_thread(_lock_wait_unlock, e1, e2)
+        >>> e1.wait() # wait for thread t to acquire filelock
         >>> lock2 = FileLock(_testfile())
         >>> lock2.is_locked()
         True
@@ -217,6 +220,7 @@ class _FileLock:
         ...   print 'thread', threading.currentThread().getName(),
         ...   print 'erroneously locked an already locked file.'
         ...
+        >>> e2.set()
         >>> t.join()
         """
         pass
@@ -244,8 +248,9 @@ class _FileLock:
         ... else:
         ...   print 'erroneously unlocked file'
 
-        >>> t = _after(0, _lock_sleep2_unlock)
-        >>> time.sleep(0.05)
+        >>> e1, e2 = threading.Event(), threading.Event()
+        >>> t = _in_thread(_lock_wait_unlock, e1, e2)
+        >>> e1.wait()
         >>> lock2 = FileLock(_testfile())
         >>> lock2.is_locked()
         True
@@ -260,6 +265,7 @@ class _FileLock:
         ... else:
         ...   print 'erroneously unlocked a file locked by another thread.'
         ...
+        >>> e2.set()
         >>> t.join()
         """
         pass
@@ -609,13 +615,12 @@ if hasattr(os, "link"):
 else:
     FileLock = MkdirFileLock
 
-def _after(dt, func, *args, **kwargs):
+def _in_thread(func, *args, **kwargs):
     """Execute func(*args, **kwargs) after dt seconds.
 
     Helper for docttests.
     """
     def _f():
-        time.sleep(dt)
         func(*args, **kwargs)
     t = threading.Thread(target=_f, name='/*/*')
     t.start()
@@ -629,11 +634,15 @@ def _testfile():
     import tempfile
     return os.path.join(tempfile.gettempdir(), 'trash-%s' % os.getpid())
 
-def _lock_sleep2_unlock():
-    # Lock from another thread.
+def _lock_wait_unlock(event1, event2):
+    """Lock from another thread.
+
+    Helper for doctests.
+    """
     lock = FileLock(_testfile())
     with lock:
-        time.sleep(2.0)
+        event1.set()  # we're in,
+        event2.wait() # wait for boss's permission to leave
 
 def _test():
     global FileLock
