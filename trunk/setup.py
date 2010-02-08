@@ -22,18 +22,19 @@ the link (on Unix) and mkdir (on Windows) system calls.
 This version refactors the code even further to allow testing with
 Python 2.4.""",
       py_modules=['lockfile'],
-      classifiers=['Development Status :: 4 - Beta',
-                   'Intended Audience :: Developers',
-                   'License :: OSI Approved :: MIT License',
-                   'Operating System :: MacOS',
-                   'Operating System :: Microsoft :: Windows :: Windows NT/2000',
-                   'Operating System :: POSIX',
-                   'Programming Language :: Python',
-                   'Programming Language :: Python :: 2.4',
-                   'Programming Language :: Python :: 2.5',
-                   'Programming Language :: Python :: 2.6',
-                   'Programming Language :: Python :: 2.7',
-                   'Programming Language :: Python :: 3.0',
-                   'Topic :: Software Development :: Libraries :: Python Modules',
-                   ]
+      classifiers=[
+          'Development Status :: 4 - Beta',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: MIT License',
+          'Operating System :: MacOS',
+          'Operating System :: Microsoft :: Windows :: Windows NT/2000',
+          'Operating System :: POSIX',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.4',
+          'Programming Language :: Python :: 2.5',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.0',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+          ]
       )
