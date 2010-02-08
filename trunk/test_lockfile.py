@@ -1,37 +1,43 @@
 import os
 import threading
 
-from lockfile import *
+import lockfile
 
 class ComplianceTest(object):
+    def __init__(self):
+        self.saved_class = lockfile.FileLock
+
     def setup(self):
-        global FileLock
-        self.saved_class = FileLock
-        FileLock = self.class_to_test
+        lockfile.FileLock = self.class_to_test
 
     def teardown(self):
-        global FileLock
-        FileLock = self.saved_class
+        tf = _testfile()
+        if os.path.isdir(tf):
+            shutil.rmtree(tf)
+        elif os.path.isfile(tf):
+            os.unlink(tf)
+        lockfile.FileLock = self.saved_class
 
-    def test_acquire(self):
+    def test_acquire_basic(self):
         # As simple as it gets.
-        lock = FileLock(_testfile())
+        lock = lockfile.FileLock(_testfile())
         lock.acquire()
         assert lock.is_locked()
         lock.release()
         assert not lock.is_locked()
 
+    def test_acquire_no_timeout(self):
         # No timeout test
         e1, e2 = threading.Event(), threading.Event()
         t = _in_thread(_lock_wait_unlock, e1, e2)
         e1.wait()         # wait for thread t to acquire lock
-        lock2 = FileLock(_testfile())
+        lock2 = lockfile.FileLock(_testfile())
         assert lock2.is_locked()
         assert not lock2.i_am_locking()
 
         try:
             lock2.acquire(timeout=-1)
-        except AlreadyLocked:
+        except lockfile.AlreadyLocked:
             pass
         else:
             lock2.release()
@@ -41,15 +47,16 @@ class ComplianceTest(object):
         e2.set()          # tell thread t to release lock
         t.join()
 
+    def test_acquire_with_timeout(self):
         # Timeout test
         e1, e2 = threading.Event(), threading.Event()
         t = _in_thread(_lock_wait_unlock, e1, e2)
         e1.wait()                        # wait for thread t to acquire filelock
-        lock2 = FileLock(_testfile())
+        lock2 = lockfile.FileLock(_testfile())
         assert lock2.is_locked()
         try:
             lock2.acquire(timeout=0.1)
-        except LockTimeout:
+        except lockfile.LockTimeout:
             pass
         else:
             lock2.release()
@@ -59,8 +66,8 @@ class ComplianceTest(object):
         e2.set()
         t.join()
 
-    def test_release(self):
-        lock = FileLock(_testfile())
+    def test_release_basic(self):
+        lock = lockfile.FileLock(_testfile())
         lock.acquire()
         assert lock.is_locked()
         lock.release()
@@ -68,22 +75,24 @@ class ComplianceTest(object):
         assert not lock.i_am_locking()
         try:
             lock.release()
-        except NotLocked:
+        except lockfile.NotLocked:
             pass
-        except NotMyLock:
-            raise AssertionError, 'unexpected exception: %s' % NotMyLock
+        except lockfile.NotMyLock:
+            raise AssertionError, ('unexpected exception: %s' %
+                                   lockfile.NotMyLock)
         else:
             raise AssertionError, 'erroneously unlocked file'
 
+    def test_release_threaded(self):
         e1, e2 = threading.Event(), threading.Event()
         t = _in_thread(_lock_wait_unlock, e1, e2)
         e1.wait()
-        lock2 = FileLock(_testfile())
+        lock2 = lockfile.FileLock(_testfile())
         assert lock2.is_locked()
         assert not lock2.i_am_locking()
         try:
             lock2.release()
-        except NotMyLock:
+        except lockfile.NotMyLock:
             pass
         else:
             raise AssertionError, ('erroneously unlocked a file locked'
@@ -92,22 +101,22 @@ class ComplianceTest(object):
         t.join()
 
     def test_is_locked(self):
-        lock = FileLock(_testfile())
+        lock = lockfile.FileLock(_testfile())
         lock.acquire()
         assert lock.is_locked()
         lock.release()
         assert not lock.is_locked()
 
     def test_i_am_locking(self):
-        lock1 = FileLock(_testfile(), threaded=False)
+        lock1 = lockfile.FileLock(_testfile(), threaded=False)
         lock1.acquire()
         assert lock1.is_locked()
-        lock2 = FileLock(_testfile())
+        lock2 = lockfile.FileLock(_testfile())
         assert lock1.i_am_locking()
         assert not lock2.i_am_locking()
         try:
             lock2.acquire(timeout=2)
-        except LockTimeout:
+        except lockfile.LockTimeout:
             lock2.break_lock()
             assert not lock2.is_locked()
             assert not lock1.is_locked()
@@ -119,22 +128,22 @@ class ComplianceTest(object):
         lock2.release()
 
     def test_break_lock(self):
-        lock = FileLock(_testfile())
+        lock = lockfile.FileLock(_testfile())
         lock.acquire()
         assert lock.is_locked()
-        lock2 = FileLock(_testfile())
+        lock2 = lockfile.FileLock(_testfile())
         assert lock2.is_locked()
         lock2.break_lock()
         assert not lock2.is_locked()
         try:
             lock.release()
-        except NotLocked:
+        except lockfile.NotLocked:
             pass
         else:
             raise AssertionError('break lock failed')
 
     def test_enter(self):
-        lock = FileLock(_testfile())
+        lock = lockfile.FileLock(_testfile())
         with lock:
             assert lock.is_locked()
         assert not lock.is_locked()
@@ -154,15 +163,15 @@ def _testfile():
 
 def _lock_wait_unlock(event1, event2):
     """Lock from another thread.  Helper for tests."""
-    with FileLock(_testfile()):
+    with lockfile.FileLock(_testfile()):
         event1.set()  # we're in,
         event2.wait() # wait for boss's permission to leave
 
 class TestLinkFileLock(ComplianceTest):
-    class_to_test = LinkFileLock
+    class_to_test = lockfile.LinkFileLock
 
 class TestMkdirFileLock(ComplianceTest):
-    class_to_test = MkdirFileLock
+    class_to_test = lockfile.MkdirFileLock
 
 try:
     import sqlite3
@@ -170,4 +179,4 @@ except ImportError:
     pass
 else:
     class TestSQLiteFileLock(ComplianceTest):
-        class_to_test = SQLiteFileLock
+        class_to_test = lockfile.SQLiteFileLock
