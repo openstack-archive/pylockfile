@@ -19,6 +19,14 @@
    link-based scheme may be deleted so that only a single locking scheme is
    used, providing cross-platform lockfile cooperation.
 
+.. note::
+
+   The implementation uses the :statement:`with` statement, both in the
+   tests and in the main code, so will only work out-of-the-box with Python
+   2.5 or later.  However, the use of the :statement:`with` statement is
+   minimal, so if you apply the patch in the file 2.4.diff (which
+   accompanies the distribution) you can use it with Python 2.4.
+
 The :mod:`lockfile` module exports a :class:`FileLock` class which provides
 a simple API for locking files.  Unlike the Windows :func:`msvcrt.locking`
 function, the Unix :func:`fcntl.flock`, :func:`fcntl.lockf` and the
