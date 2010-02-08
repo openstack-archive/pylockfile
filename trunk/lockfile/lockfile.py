@@ -47,15 +47,13 @@ To do:
     * Actually test MkdirFileLock class on Windows
 """
 
-from __future__ import division
-from __future__ import with_statement
+from __future__ import division, with_statement
 
 import socket
 import os
 import threading
 import time
 import errno
-import urllib
 import thread
 
 class Error(Exception):
@@ -344,7 +342,7 @@ class _FileLock:
         self.acquire()
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *_exc):
         """Context manager support.
 
         >>> 'tested in __enter__'
@@ -369,7 +367,7 @@ class LinkFileLock(_FileLock):
             # Try and create a hard link to it.
             try:
                 os.link(self.unique_name, self.lock_file)
-            except OSError, msg:
+            except OSError:
                 # Link creation failed.  Maybe we've double-locked?
                 nlinks = os.stat(self.unique_name).st_nlink
                 if nlinks == 2:
@@ -434,10 +432,8 @@ class MkdirFileLock(_FileLock):
 
         if timeout is None:
             wait = 0.1
-        elif timeout <= 0:
-            wait = 0
         else:
-            wait = timeout / 10
+            wait = max(0, timeout / 10)
 
         while True:
             try:
@@ -487,9 +483,9 @@ class SQLiteFileLock(_FileLock):
     "Demonstration of using same SQL-based locking."
 
     import tempfile
-    _fd, _testdb = tempfile.mkstemp()
+    _fd, testdb = tempfile.mkstemp()
     os.close(_fd)
-    os.unlink(_testdb)
+    os.unlink(testdb)
     del _fd, tempfile
 
     def __init__(self, path, threaded=True):
@@ -498,7 +494,7 @@ class SQLiteFileLock(_FileLock):
         self.unique_name = unicode(self.unique_name)
 
         import sqlite3
-        self.connection = sqlite3.connect(SQLiteFileLock._testdb)
+        self.connection = sqlite3.connect(SQLiteFileLock.testdb)
         
         c = self.connection.cursor()
         try:
@@ -512,7 +508,7 @@ class SQLiteFileLock(_FileLock):
         else:
             self.connection.commit()
             import atexit
-            atexit.register(os.unlink, SQLiteFileLock._testdb)
+            atexit.register(os.unlink, SQLiteFileLock.testdb)
 
     def acquire(self, timeout=None):
         end_time = time.time()
@@ -638,8 +634,9 @@ def _lock_sleep2_unlock():
     with lock:
         time.sleep(2.0)
 
+def _test():
+    global FileLock
 
-if __name__ == "__main__":
     import doctest
     import sys
 
@@ -672,11 +669,16 @@ if __name__ == "__main__":
     try:
         import sqlite3
     except ImportError:
-        print "SQLite3 not available to test with."
+        print "SQLite3 is unavailable - not testing SQLiteFileLock."
     else:
+        print "using sqlite", sqlite3.sqlite_version,
+        print "& pysqlite", sqlite3.version
         FileLock = SQLiteFileLock
         f, t = test_object(_FileLock)
         nfailed += f
         ntests += t
 
     print "total tests:", ntests, "total failed:", nfailed
+
+if __name__ == "__main__":
+    _test()
