@@ -112,7 +112,7 @@ The following class is provided:
 
    Module :mod:`fcntl`
       Provides the current best way to lock files on Unix systems
-      (:func:`lockf` and :func:`flock`.
+      (:func:`lockf` and :func:`flock`).
 
 Implementing Other Locking Schemes
 ----------------------------------
@@ -187,3 +187,16 @@ If you don't want to wait forever, you might try::
 	    lock.acquire()
     print "I locked", lock.path
     lock.release()
+
+Other Libraries
+---------------
+
+The idea of implementing advisory locking with a standard API is not new
+with :mod:`lockfile`.  There are a number of other libraries available:
+
+* locknix - from Barry Warsaw via Mailman - Unix only
+* mx.MiscLockFile - from Marc André Lemburg, part of the mx.Base
+  distribution - cross-platform.
+* Twisted - http://twistedmatrix.com/trac/browser/trunk/twisted/python/lockfile.py
+* http://pypi.python.org/pypi/zc.lockfile
+
