@@ -648,4 +648,42 @@ def _lock_sleep2_unlock():
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    import sys
+
+    def test_object(c):
+        tests = doctest.DocTestFinder().find(c)
+        runner = doctest.DocTestRunner(verbose="-v" in sys.argv)
+        tests.sort(key = lambda test: test.name)
+        nfailed = ntests = 0
+        for test in tests:
+            f, t = runner.run(test)
+            nfailed += f
+            ntests += t
+        print FileLock.__name__, "tests:", ntests, "failed:", nfailed
+        return nfailed, ntests
+
+    nfailed = ntests = 0
+
+    if hasattr(os, "link"):
+        FileLock = LinkFileLock
+        f, t = test_object(_FileLock)
+        nfailed += f
+        ntests += t
+
+    if hasattr(os, "mkdir"):
+        FileLock = MkdirFileLock
+        test_object(_FileLock)
+        nfailed += f
+        ntests += t
+
+    try:
+        import sqlite3
+    except ImportError:
+        pass
+    else:
+        FileLock = SQLiteFileLock
+        test_object(_FileLock)
+        nfailed += f
+        ntests += t
+
+    print "total tests:", ntests, "total failed:", nfailed
