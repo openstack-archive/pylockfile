@@ -57,6 +57,10 @@ import time
 import errno
 import thread
 
+__all__ = ['Error', 'LockError', 'LockTimeout', 'AlreadyLocked',
+           'LockFailed', 'UnlockError', 'NotLocked', 'NotMyLock',
+           'LinkFileLock', 'MkdirFileLock', 'SQLiteFileLock']
+
 class Error(Exception):
     """
     Base class for other exceptions.
