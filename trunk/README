@@ -7,6 +7,6 @@ mkdir (on Windows) system calls.  An implementation based on SQLite is also
 provided, more as a demonstration of the possibilities it provides than as
 production-quality code.
 
-In install:
+To install:
 
     python setup.py install
