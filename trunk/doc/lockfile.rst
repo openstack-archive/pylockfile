@@ -143,9 +143,9 @@ The
 Implementing Other Locking Schemes
 ----------------------------------
 
-There is a :class:`_FileLock` base class which can be used as the foundation
+There is a :class:`LockBase` base class which can be used as the foundation
 for other locking schemes.  For example, if shared filesystems are not
-available, :class:`_FileLock` could be subclassed to provide locking via an
+available, :class:`LockBase` could be subclassed to provide locking via an
 SQL database.
 
 FileLock Objects
