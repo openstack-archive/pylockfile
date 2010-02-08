@@ -55,6 +55,7 @@ import os
 import threading
 import time
 import errno
+import urllib
 
 class Error(Exception):
     """
@@ -150,7 +151,8 @@ class _FileLock:
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:
-            tname = "%s-" % threading.currentThread().getName()
+            tname = "%s-" % urllib.quote(threading.currentThread().getName(),
+                                         safe='')
         else:
             tname = ""
         dirname = os.path.dirname(self.lock_file)
@@ -424,7 +426,8 @@ class MkdirFileLock(_FileLock):
         """
         _FileLock.__init__(self, path)
         if threaded:
-            tname = "%s-" % threading.currentThread().getName()
+            tname = "%s-" % urllib.quote(threading.currentThread().getName(),
+                                         safe='')
         else:
             tname = ""
         # Lock file itself is a directory.  Place the unique file name into
@@ -627,7 +630,7 @@ def _after(dt, func, *args, **kwargs):
     def _f():
         time.sleep(dt)
         func(*args, **kwargs)
-    t = threading.Thread(target=_f)
+    t = threading.Thread(target=_f, name='/*/*')
     t.start()
     return t
 
