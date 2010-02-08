@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+import lockfile
 from compliancetest import _ComplianceTest
 
 class ComplianceTest(_ComplianceTest):
