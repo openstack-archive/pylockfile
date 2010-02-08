@@ -42,10 +42,8 @@ Exceptions:
 
 To do:
     * Write more test cases
-      - test cases where threaded == False
-      - test case(s) for i_am_locking()
       - verify that all lines of code are executed
-    * Actually test MkdirFileLock class on Windows
+    * Describe on-disk file structures in the documentation.
 """
 
 from __future__ import division, with_statement
