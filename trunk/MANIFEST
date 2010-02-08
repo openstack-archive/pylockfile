@@ -3,6 +3,7 @@ ACKS
 LICENSE
 MANIFEST
 README
+RELEASE-NOTES
 lockfile.py
 setup.py
 doc/lockfile.rst
