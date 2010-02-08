@@ -1,0 +1,6 @@
+LICENSE
+MANIFEST
+README
+setup.py
+doc/lockfile.rst
+src/lockfile.py

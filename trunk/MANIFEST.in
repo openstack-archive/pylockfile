@@ -1,0 +1,2 @@
+include README LICENSE MANIFEST lockfile.py setup.py
+recursive-include doc *.rst
