@@ -154,10 +154,10 @@ class _FileLock:
         else:
             tname = ""
         dirname = os.path.dirname(self.lock_file)
-        self.unique_name = src = os.path.join(dirname,
-                                              "%s.%s%s" % (self.hostname,
-                                                           tname,
-                                                           self.pid))
+        self.unique_name = os.path.join(dirname,
+                                        "%s.%s%s" % (self.hostname,
+                                                     tname,
+                                                     self.pid))
 
     def acquire(self, timeout=None):
         """
@@ -206,9 +206,11 @@ class _FileLock:
         >>> lock2.is_locked()
         True
         >>> try:
-        ...   lock2.acquire(timeout=0.4)
-        ... except AlreadyLocked:
+        ...   lock2.acquire(timeout=0.1)
+        ... except LockTimeout:
         ...   pass
+        ... except Exception, e:
+        ...   print 'unexpected exception', repr(e)
         ... else:
         ...   lock2.release()
         ...   print threading.currentThread().getName(),
@@ -427,10 +429,10 @@ class MkdirFileLock(_FileLock):
             tname = ""
         # Lock file itself is a directory.  Place the unique file name into
         # it.
-        self.unique_name = src = os.path.join(self.lock_file,
-                                              "%s.%s%s" % (self.hostname,
-                                                           tname,
-                                                           self.pid))
+        self.unique_name  = os.path.join(self.lock_file,
+                                         "%s.%s%s" % (self.hostname,
+                                                      tname,
+                                                      self.pid))
 
     def acquire(self, timeout=None):
         end_time = time.time()
@@ -498,7 +500,7 @@ class SQLiteFileLock(_FileLock):
     del _fd, tempfile
 
     def __init__(self, path, threaded=True):
-        _FileLock.__init__(self, path)
+        _FileLock.__init__(self, path, threaded)
         self.lock_file = unicode(self.lock_file)
         self.unique_name = unicode(self.unique_name)
 
@@ -543,20 +545,20 @@ class SQLiteFileLock(_FileLock):
                                (self.lock_file, self.unique_name))
                 self.connection.commit()
 
-            # Check to see if we are the only lock holder.
-            cursor.execute("select * from locks"
-                           "  where unique_name = ?",
-                           (self.unique_name,))
-            rows = cursor.fetchall()
-            if len(rows) > 1:
-                # Nope.  Someone else got there.  Remove our lock.
-                cursor.execute("delete from locks"
-                               "  where threadid = ?",
+                # Check to see if we are the only lock holder.
+                cursor.execute("select * from locks"
+                               "  where unique_name = ?",
                                (self.unique_name,))
-                self.connection.commit()
-            else:
-                # Yup.  We're done, so go home.
-                return
+                rows = cursor.fetchall()
+                if len(rows) > 1:
+                    # Nope.  Someone else got there.  Remove our lock.
+                    cursor.execute("delete from locks"
+                                   "  where threadid = ?",
+                                   (self.unique_name,))
+                    self.connection.commit()
+                else:
+                    # Yup.  We're done, so go home.
+                    return
 
             # Maybe we should wait a bit longer.
             if timeout is not None and time.time() > end_time:
@@ -574,13 +576,21 @@ class SQLiteFileLock(_FileLock):
         if not self.is_locked():
             raise NotLocked
         if not self.i_am_locking():
-            raise NotMyLock
+            raise NotMyLock, ("locker:", self._who_is_locking(),
+                              "me:", self.unique_name)
         cursor = self.connection.cursor()
         cursor.execute("delete from locks"
                        "  where unique_name = ?",
                        (self.unique_name,))
         self.connection.commit()
 
+    def _who_is_locking(self):
+        cursor = self.connection.cursor()
+        cursor.execute("select unique_name from locks"
+                       "  where lock_file = ?",
+                       (self.lock_file,))
+        return cursor.fetchone()[0]
+        
     def is_locked(self):
         cursor = self.connection.cursor()
         cursor.execute("select * from locks"
@@ -602,12 +612,12 @@ class SQLiteFileLock(_FileLock):
         cursor.execute("delete from locks"
                        "  where lock_file = ?",
                        (self.lock_file,))
+        self.connection.commit()
 
 if hasattr(os, "link"):
     FileLock = LinkFileLock
 else:
     FileLock = MkdirFileLock
-FileLock = SQLiteFileLock
 
 def _after(dt, func, *args, **kwargs):
     """Execute func(*args, **kwargs) after dt seconds.
