@@ -360,7 +360,7 @@ class LinkFileLock(LockBase):
 
     def acquire(self, timeout=None):
         try:
-            open(self.unique_name, "wb")
+            open(self.unique_name, "wb").close()
         except IOError:
             raise LockFailed
 
@@ -460,7 +460,7 @@ class MkdirFileLock(LockBase):
                     # Couldn't create the lock for some other reason
                     raise LockFailed
             else:
-                open(self.unique_name, "wb")
+                open(self.unique_name, "wb").close()
                 return
 
     def release(self):
