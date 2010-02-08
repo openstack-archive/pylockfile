@@ -22,6 +22,7 @@ the link (on Unix) and mkdir (on Windows) system calls.
 This version refactors the code even further to allow testing with
 Python 2.4.""",
       py_modules=['lockfile'],
+      license='MIT License',
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
