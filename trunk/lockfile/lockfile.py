@@ -16,9 +16,13 @@ Usage:
 ... else:
 ...     print 'got lock'
 got lock
+>>> print lock.is_locked()
+True
 >>> lock.release()
 
 >>> lock = FileLock(_testfile())
+>>> print lock.is_locked()
+False
 >>> with lock:
 ...    print lock.is_locked()
 True
@@ -174,38 +178,35 @@ class _FileLock:
         >>> lock.acquire()
         >>> lock.release()
 
-        >>> # Simple timeout test.
-        >>> x = open(_testfile() + '.lock', 'wb')
+        >>> # No timeout test
+        >>> t = _after(0, _lock_sleep2_unlock)
+        >>> time.sleep(0.05)
+        >>> lock2 = FileLock(_testfile())
+        >>> lock2.is_locked()
+        True
+        >>> lock2.i_am_locking()
+        False
         >>> try:
-        ...   lock.acquire(timeout=0.4)
-        ... except LockTimeout:
-        ...   pass
-        ... else:
-        ...   print 'erroneously locked the file'
-        >>> # Simple no timeout test.
-        >>> try:
-        ...   lock.acquire(timeout=-1)
-        ... except LockTimeout:
-        ...   print 'erroneously raised LockTimeout'
+        ...   lock2.acquire(timeout=-1)
         ... except AlreadyLocked:
         ...   pass
+        ... except Exception, e:
+        ...   print 'unexpected exception', repr(e)
         ... else:
-        ...   print 'erroneously locked the file'
+        ...   print threading.currentThread().getName(),
+        ...   print 'erroneously locked an already locked file.'
+        ...   lock2.release()
         ...
-        >>> x.close()
-        >>> os.unlink(_testfile() + '.lock')
+        >>> t.join()
 
-        >>> _after(0, _lock_sleep_unlock)
-        >>> while not os.path.exists(_testfile() + '.lock'):
-        ...   time.sleep(0.05)
-        ...
-        >>> os.path.exists(_testfile() + '.lock')
-        True
+        >>> # Timeout test
+        >>> t = _after(0, _lock_sleep2_unlock)
+        >>> time.sleep(0.05)
         >>> lock2 = FileLock(_testfile())
         >>> lock2.is_locked()
         True
         >>> try:
-        ...   lock2.acquire(timeout=-1)
+        ...   lock2.acquire(timeout=0.4)
         ... except AlreadyLocked:
         ...   pass
         ... else:
@@ -213,29 +214,7 @@ class _FileLock:
         ...   print threading.currentThread().getName(),
         ...   print 'erroneously locked an already locked file.'
         ...
-        >>> while threading.activeCount() > 1:
-        ...   time.sleep(0.1)
-
-        >>> testdir = os.path.join(os.path.dirname(_testfile()), 'lockdir')
-        >>> testfile = os.path.join(testdir, 'trash')
-        >>> os.mkdir(testdir)
-        >>> try:
-        ...   os.mkdir(testdir)
-        ... except OSError, err:
-        ...   if err.errno != errno.EEXIST:
-        ...     raise
-        >>> os.chmod(testdir, 0555)
-        >>> lock = FileLock(testfile)
-        >>> try:
-        ...   lock.acquire()
-        ... except LockFailed:
-        ...   pass
-        ... else:
-        ...   lock.release()
-        ...   print 'erroneously locked an unlockable file'
-        ...
-        >>> os.chmod(testdir, 0777)
-        >>> os.rmdir(testdir)
+        >>> t.join()
         """
         pass
 
@@ -247,35 +226,38 @@ class _FileLock:
         >>> lock = FileLock(_testfile())
         >>> lock.acquire()
         >>> lock.release()
-        >>> os.path.exists(lock.lock_file)
+        >>> lock.is_locked()
         False
-        >>> os.path.exists(lock.unique_name)
+        >>> lock.i_am_locking()
         False
         >>> try:
         ...   lock.release()
         ... except NotLocked:
         ...   pass
+        ... except NotMyLock:
+        ...   print 'unexpected exception', NotMyLock
+        ... except Exception, e:
+        ...   print 'unexpected exception', repr(e)
         ... else:
         ...   print 'erroneously unlocked file'
 
-        >>> _after(0, _lock_sleep_unlock)
-        >>> while not os.path.exists(_testfile() + '.lock'):
-        ...   time.sleep(0.05)
-        ...
-        >>> os.path.exists(_testfile() + '.lock')
-        True
+        >>> t = _after(0, _lock_sleep2_unlock)
+        >>> time.sleep(0.05)
         >>> lock2 = FileLock(_testfile())
         >>> lock2.is_locked()
         True
+        >>> lock2.i_am_locking()
+        False
         >>> try:
         ...   lock2.release()
         ... except NotMyLock:
         ...   pass
+        ... except Exception, e:
+        ...   print 'unexpected exception', repr(e)
         ... else:
         ...   print 'erroneously unlocked a file locked by another thread.'
         ...
-        >>> while threading.activeCount() > 1:
-        ...   time.sleep(0.1)
+        >>> t.join()
         """
         pass
 
@@ -298,6 +280,10 @@ class _FileLock:
         >>> lock1 = FileLock(_testfile(), threaded=False)
         >>> lock1.acquire()
         >>> lock2 = FileLock(_testfile())
+        >>> lock1.i_am_locking()
+        True
+        >>> lock2.i_am_locking()
+        False
 	>>> try:
 	...   lock2.acquire(timeout=2)
 	... except LockTimeout:
@@ -333,6 +319,8 @@ class _FileLock:
         ...   lock.release()
         ... except NotLocked:
         ...   pass
+        ... except Exception, e:
+        ...   print 'unexpected exception', repr(e)
         ... else:
         ...   print 'break lock failed'
         """
@@ -500,11 +488,126 @@ class MkdirFileLock(_FileLock):
                 os.unlink(os.path.join(self.lock_file, name))
             os.rmdir(self.lock_file)
 
+class SQLiteFileLock(_FileLock):
+    "Demonstration of using same SQL-based locking."
+
+    import tempfile
+    _fd, _testdb = tempfile.mkstemp()
+    os.close(_fd)
+    os.unlink(_testdb)
+    del _fd, tempfile
+
+    def __init__(self, path, threaded=True):
+        _FileLock.__init__(self, path)
+        self.lock_file = unicode(self.lock_file)
+        self.unique_name = unicode(self.unique_name)
+
+        import sqlite3
+        self.connection = sqlite3.connect(SQLiteFileLock._testdb)
+        
+        c = self.connection.cursor()
+        try:
+            c.execute("create table locks"
+                      "("
+                      "   lock_file varchar(32),"
+                      "   unique_name varchar(32)"
+                      ")")
+        except sqlite3.OperationalError:
+            pass
+        else:
+            self.connection.commit()
+            import atexit
+            atexit.register(os.unlink, SQLiteFileLock._testdb)
+
+    def acquire(self, timeout=None):
+        end_time = time.time()
+        if timeout is not None and timeout > 0:
+            end_time += timeout
+
+        if timeout is None:
+            wait = 0.1
+        elif timeout <= 0:
+            wait = 0
+        else:
+            wait = timeout / 10
+
+        cursor = self.connection.cursor()
+
+        while True:
+            if not self.is_locked():
+                # Not locked.  Try to lock it.
+                cursor.execute("insert into locks"
+                               "  (lock_file, unique_name)"
+                               "  values"
+                               "  (?, ?)",
+                               (self.lock_file, self.unique_name))
+                self.connection.commit()
+
+            # Check to see if we are the only lock holder.
+            cursor.execute("select * from locks"
+                           "  where unique_name = ?",
+                           (self.unique_name,))
+            rows = cursor.fetchall()
+            if len(rows) > 1:
+                # Nope.  Someone else got there.  Remove our lock.
+                cursor.execute("delete from locks"
+                               "  where threadid = ?",
+                               (self.unique_name,))
+                self.connection.commit()
+            else:
+                # Yup.  We're done, so go home.
+                return
+
+            # Maybe we should wait a bit longer.
+            if timeout is not None and time.time() > end_time:
+                if timeout > 0:
+                    # No more waiting.
+                    raise LockTimeout
+                else:
+                    # Someone else has the lock and we are impatient..
+                    raise AlreadyLocked
+
+            # Well, okay.  We'll give it a bit longer.
+            time.sleep(wait)
+
+    def release(self):
+        if not self.is_locked():
+            raise NotLocked
+        if not self.i_am_locking():
+            raise NotMyLock
+        cursor = self.connection.cursor()
+        cursor.execute("delete from locks"
+                       "  where unique_name = ?",
+                       (self.unique_name,))
+        self.connection.commit()
+
+    def is_locked(self):
+        cursor = self.connection.cursor()
+        cursor.execute("select * from locks"
+                       "  where lock_file = ?",
+                       (self.lock_file,))
+        rows = cursor.fetchall()
+        return not not rows
+
+    def i_am_locking(self):
+        cursor = self.connection.cursor()
+        cursor.execute("select * from locks"
+                       "  where lock_file = ?"
+                       "    and unique_name = ?",
+                       (self.lock_file, self.unique_name))
+        return not not cursor.fetchall()
+
+    def break_lock(self):
+        cursor = self.connection.cursor()
+        cursor.execute("delete from locks"
+                       "  where lock_file = ?",
+                       (self.lock_file,))
+
 if hasattr(os, "link"):
     FileLock = LinkFileLock
 else:
     FileLock = MkdirFileLock
-FileLock = MkdirFileLock
+FileLock = SQLiteFileLock
 
 def _after(dt, func, *args, **kwargs):
     """Execute func(*args, **kwargs) after dt seconds.
@@ -516,6 +619,7 @@ def _after(dt, func, *args, **kwargs):
         func(*args, **kwargs)
     t = threading.Thread(target=_f)
     t.start()
+    return t
 
 def _testfile():
     """Return platform-appropriate lock file name.
@@ -525,7 +629,7 @@ def _testfile():
     import tempfile
     return os.path.join(tempfile.gettempdir(), 'trash-%s' % os.getpid())
 
-def _lock_sleep_unlock():
+def _lock_sleep2_unlock():
     # Lock from another thread.
     lock = FileLock(_testfile())
     with lock:
