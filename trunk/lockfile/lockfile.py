@@ -2,6 +2,7 @@
 """
 lockfile.py - Platform-independent advisory file locks.
 
+Requires Python 2.5 unless you apply 2.4.diff
 Locking is done on a per-thread basis instead of a per-process basis.
 
 Usage:
@@ -671,7 +672,7 @@ def _test():
     except ImportError:
         print "SQLite3 is unavailable - not testing SQLiteFileLock."
     else:
-        print "using sqlite", sqlite3.sqlite_version,
+        print "Testing SQLiteFileLock with sqlite", sqlite3.sqlite_version,
         print "& pysqlite", sqlite3.version
         FileLock = SQLiteFileLock
         f, t = test_object(_FileLock)
