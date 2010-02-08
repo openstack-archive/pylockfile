@@ -11,6 +11,6 @@ class ComplianceTest(_ComplianceTest):
             event2.wait() # wait for boss's permission to leave
 
     def test_enter(self):
-        with lockfile.FileLock(self._testfile()):
+        with lockfile.FileLock(self._testfile()) as lock:
             assert lock.is_locked()
         assert not lock.is_locked()
