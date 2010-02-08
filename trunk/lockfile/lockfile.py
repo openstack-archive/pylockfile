@@ -48,7 +48,7 @@ Exceptions:
             NotMyLock - File was locked but not by the current thread/process
 """
 
-from __future__ import division, with_statement
+from __future__ import division
 
 import socket
 import os
