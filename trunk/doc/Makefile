@@ -69,5 +69,5 @@ linkcheck:
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in .build/linkcheck/output.txt."
 
-doc.zip: $(wildcard .build/html/*)
-	(cd .build/html ; zip -r ../../doc.zip *)
+html.zip: html
+	(cd .build/html ; zip -r ../../$@ *)
