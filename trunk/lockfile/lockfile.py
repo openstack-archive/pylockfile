@@ -50,12 +50,19 @@ Exceptions:
 
 from __future__ import division
 
+import sys
 import socket
 import os
 import threading
 import time
 import errno
-import thread
+
+# Work with PEP8 and non-PEP8 versions of threading module.
+try:
+    threading.current_thread
+except AttributeError:
+    threading.current_thread = threading.currentThread
+    threading.Thread.get_name = threading.Thread.getName
 
 __all__ = ['Error', 'LockError', 'LockTimeout', 'AlreadyLocked',
            'LockFailed', 'UnlockError', 'NotLocked', 'NotMyLock',
@@ -149,13 +156,14 @@ class LockBase:
     def __init__(self, path, threaded=True):
         """
         >>> lock = LockBase('somefile')
+        >>> lock = LockBase('somefile', threaded=False)
         """
         self.path = path
         self.lock_file = os.path.abspath(path) + ".lock"
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:
-            tname = "%x-" % thread.get_ident()
+            tname = "%x-" % threading.current_thread().get_name()
         else:
             tname = ""
         dirname = os.path.dirname(self.lock_file)
@@ -178,7 +186,7 @@ class LockBase:
         * If timeout <= 0, raise AlreadyLocked immediately if the file is
           already locked.
         """
-        raise NotImplemented, "implement in subclass"
+        raise NotImplemented("implement in subclass")
 
     def release(self):
         """
@@ -186,25 +194,25 @@ class LockBase:
 
         If the file is not locked, raise NotLocked.
         """
-        raise NotImplemented, "implement in subclass"
+        raise NotImplemented("implement in subclass")
 
     def is_locked(self):
         """
         Tell whether or not the file is locked.
         """
-        raise NotImplemented, "implement in subclass"
+        raise NotImplemented("implement in subclass")
 
     def i_am_locking(self):
         """
         Return True if this object is locking the file.
         """
-        raise NotImplemented, "implement in subclass"
+        raise NotImplemented("implement in subclass")
 
     def break_lock(self):
         """
         Remove a lock.  Useful if a locking thread failed to unlock.
         """
-        raise NotImplemented, "implement in subclass"
+        raise NotImplemented("implement in subclass")
 
     def __enter__(self):
         """
@@ -281,8 +289,9 @@ class MkdirFileLock(LockBase):
     def __init__(self, path, threaded=True):
         """
         >>> lock = MkdirFileLock('somefile')
+        >>> lock = MkdirFileLock('somefile', threaded=False)
         """
-        LockBase.__init__(self, path)
+        LockBase.__init__(self, path, threaded)
         if threaded:
             tname = "%x-" % thread.get_ident()
         else:
@@ -307,7 +316,8 @@ class MkdirFileLock(LockBase):
         while True:
             try:
                 os.mkdir(self.lock_file)
-            except OSError, err:
+            except OSError:
+                err = sys.exc_info()[1]
                 if err.errno == errno.EEXIST:
                     # Already locked.
                     if os.path.exists(self.unique_name):
@@ -443,8 +453,7 @@ class SQLiteFileLock(LockBase):
         if not self.is_locked():
             raise NotLocked
         if not self.i_am_locking():
-            raise NotMyLock, ("locker:", self._who_is_locking(),
-                              "me:", self.unique_name)
+            raise NotMyLock((self._who_is_locking(), self.unique_name))
         cursor = self.connection.cursor()
         cursor.execute("delete from locks"
                        "  where unique_name = ?",
