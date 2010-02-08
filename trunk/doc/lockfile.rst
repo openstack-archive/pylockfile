@@ -8,8 +8,6 @@
 .. sectionauthor:: Skip Montanaro <skip@pobox.com>
 
 
-.. versionadded:: "not yet"
-
 .. note::
 
    This module is alpha software.  It is quite possible that the API and
@@ -28,7 +26,7 @@
    use it with Python 2.4.  It's possible that it will work in Python 2.3
    with that patch applied as well, though the doctest code relies on APIs
    new in 2.4, so will have to be rewritten somewhat to allow testing on
-   2.3.  As they say, patches welcome. ;-)
+   2.3.  As they say, patches welcome. ``;-)``
 
 The :mod:`lockfile` module exports a :class:`FileLock` class which provides
 a simple API for locking files.  Unlike the Windows :func:`msvcrt.locking`
@@ -238,3 +236,10 @@ with :mod:`lockfile`.  There are a number of other libraries available:
   distribution - cross-platform.
 * Twisted - http://twistedmatrix.com/trac/browser/trunk/twisted/python/lockfile.py
 * zc.lockfile - http://pypi.python.org/pypi/zc.lockfile
+
+
+Contacting the Author
+---------------------
+
+If you encounter any problems with ``lockfile``, would like help or want to
+submit a patch, contact me directly: Skip Montanaro (skip@pobox.com).
