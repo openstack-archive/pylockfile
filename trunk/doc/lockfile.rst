@@ -26,8 +26,9 @@
    2.5 or later.  However, the use of the :statement:`with` statement is
    minimal, so if you apply the patch in the included 2.4.diff file you can
    use it with Python 2.4.  It's possible that it will work in Python 2.3
-   with that patch applied, though the doctest code relies on APIs new in
-   2.4, so will have to be rewritten somewhat to allow testing on 2.3.
+   with that patch applied as well , though the doctest code relies on APIs
+   new in 2.4, so will have to be rewritten somewhat to allow testing on
+   2.3.  As they say, patches welcome. ;-)
 
 The :mod:`lockfile` module exports a :class:`FileLock` class which provides
 a simple API for locking files.  Unlike the Windows :func:`msvcrt.locking`
@@ -118,14 +119,21 @@ The following classes are provided:
    mechanism.  The parameters have the same meaning as for the
    :class:`LinkFileLock` class.
 
-By default, the :const:`FileLock` variable refers to the
-:class:`LinkFileLock` class on Unix (including Linux and Mac) systems.  On
-Windows it refers to the :class:`MkdirFileLock` class.
+By default, the :const:`FileLock` object refers to the
+:class:`MkdirFileLock` class on Windows.  On all other platforms it refers
+to the :class:`LinkFileLock` class.
 
-The 
-.. note::
+When locking a file the :class:`LinkFileLock` class creates a uniquely named
+hard link to an empty lock file.  That hard link contains the hostname,
+process id, and if locks between threads are distinguished, the thread
+identifier.  For example, if you want to lock access to a file named
+"README", the lock file is named "README.lock".  With per-thread locks
+enabled the hard link is named HOSTNAME-THREADID-PID.  With only per-process
+locks enabled the hard link is named HOSTNAME--PID.
 
-   ... Describe on-disk lock file structure here ...
+When using the :class:`MkdirFileLock` class the lock file is a directory.
+Referring to the example above, README.lock will be a directory and
+HOSTNAME-THREADID-PID will be an empty file within that directory.
 
 .. seealso::
 
