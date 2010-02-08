@@ -152,7 +152,9 @@ FileLock Objects
 ----------------
 
 :class:`FileLock` objects support the :term:`context manager` protocol used
-by the statement:`with` statement.
+by the statement:`with` statement.  The timeout option is not supported when
+used in this fashion.  While support for timeouts could be implemented,
+there is no support for handling exceptions in the :func:`__enter__` method.
 
 :class:`FileLock` has the following user-visible methods:
 
