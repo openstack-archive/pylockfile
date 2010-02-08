@@ -140,11 +140,11 @@ class NotMyLock(UnlockError):
     """
     pass
 
-class _FileLock:
+class LockBase:
     """Base class for platform-specific lock classes."""
     def __init__(self, path, threaded=True):
         """
-        >>> lock = _FileLock(_testfile())
+        >>> lock = LockBase(_testfile())
         """
         self.path = path
         self.lock_file = os.path.abspath(path) + ".lock"
@@ -357,7 +357,7 @@ class _FileLock:
         """
         self.release()
 
-class LinkFileLock(_FileLock):
+class LinkFileLock(LockBase):
     """Lock access to a file using atomic property of link(2)."""
 
     def acquire(self, timeout=None):
@@ -414,13 +414,13 @@ class LinkFileLock(_FileLock):
         if os.path.exists(self.lock_file):
             os.unlink(self.lock_file)
 
-class MkdirFileLock(_FileLock):
+class MkdirFileLock(LockBase):
     """Lock file by creating a directory."""
     def __init__(self, path, threaded=True):
         """
         >>> lock = MkdirFileLock(_testfile())
         """
-        _FileLock.__init__(self, path)
+        LockBase.__init__(self, path)
         if threaded:
             tname = "%x-" % thread.get_ident()
         else:
@@ -486,7 +486,7 @@ class MkdirFileLock(_FileLock):
                 os.unlink(os.path.join(self.lock_file, name))
             os.rmdir(self.lock_file)
 
-class SQLiteFileLock(_FileLock):
+class SQLiteFileLock(LockBase):
     "Demonstration of using same SQL-based locking."
 
     import tempfile
@@ -496,7 +496,7 @@ class SQLiteFileLock(_FileLock):
     del _fd, tempfile
 
     def __init__(self, path, threaded=True):
-        _FileLock.__init__(self, path, threaded)
+        LockBase.__init__(self, path, threaded)
         self.lock_file = unicode(self.lock_file)
         self.unique_name = unicode(self.unique_name)
 
@@ -666,13 +666,13 @@ def _test():
 
     if hasattr(os, "link"):
         FileLock = LinkFileLock
-        f, t = test_object(_FileLock)
+        f, t = test_object(LockBase)
         nfailed += f
         ntests += t
 
     if hasattr(os, "mkdir"):
         FileLock = MkdirFileLock
-        f, t = test_object(_FileLock)
+        f, t = test_object(LockBase)
         nfailed += f
         ntests += t
 
@@ -684,7 +684,7 @@ def _test():
         print "Testing SQLiteFileLock with sqlite", sqlite3.sqlite_version,
         print "& pysqlite", sqlite3.version
         FileLock = SQLiteFileLock
-        f, t = test_object(_FileLock)
+        f, t = test_object(LockBase)
         nfailed += f
         ntests += t
 
