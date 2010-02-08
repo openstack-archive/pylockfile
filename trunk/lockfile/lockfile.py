@@ -193,7 +193,7 @@ class _FileLock:
         ... except Exception, e:
         ...   print 'unexpected exception', repr(e)
         ... else:
-        ...   print threading.currentThread().getName(),
+        ...   print 'thread', threading.currentThread().getName(),
         ...   print 'erroneously locked an already locked file.'
         ...   lock2.release()
         ...
@@ -213,7 +213,7 @@ class _FileLock:
         ...   print 'unexpected exception', repr(e)
         ... else:
         ...   lock2.release()
-        ...   print threading.currentThread().getName(),
+        ...   print 'thread', threading.currentThread().getName(),
         ...   print 'erroneously locked an already locked file.'
         ...
         >>> t.join()
@@ -679,7 +679,7 @@ if __name__ == "__main__":
     try:
         import sqlite3
     except ImportError:
-        pass
+        print "SQLite3 not available to test with."
     else:
         FileLock = SQLiteFileLock
         test_object(_FileLock)
