@@ -3,200 +3,134 @@ import threading
 
 from lockfile import *
 
-def test_acquire():
-    """
-    >>> # As simple as it gets.
-    >>> lock = FileLock(_testfile())
-    >>> lock.acquire()
-    >>> lock.release()
+def _acquire():
+    # As simple as it gets.
+    lock = FileLock(_testfile())
+    lock.acquire()
+    assert lock.is_locked()
+    lock.release()
+    assert not lock.is_locked()
 
-    >>> # No timeout test
-    >>> e1, e2 = threading.Event(), threading.Event()
-    >>> t = _in_thread(_lock_wait_unlock, e1, e2)
-    >>> e1.wait()         # wait for thread t to acquire lock
-    >>> lock2 = FileLock(_testfile())
-    >>> lock2.is_locked()
-    True
-    >>> lock2.i_am_locking()
-    False
-    >>> try:
-    ...   lock2.acquire(timeout=-1)
-    ... except AlreadyLocked:
-    ...   pass
-    ... except Exception, e:
-    ...   print 'unexpected exception', repr(e)
-    ... else:
-    ...   print 'thread', threading.currentThread().getName(),
-    ...   print 'erroneously locked an already locked file.'
-    ...   lock2.release()
-    ...
-    >>> e2.set()          # tell thread t to release lock
-    >>> t.join()
+    # No timeout test
+    e1, e2 = threading.Event(), threading.Event()
+    t = _in_thread(_lock_wait_unlock, e1, e2)
+    e1.wait()         # wait for thread t to acquire lock
+    lock2 = FileLock(_testfile())
+    assert lock2.is_locked()
+    assert not lock2.i_am_locking()
+    
+    try:
+        lock2.acquire(timeout=-1)
+    except AlreadyLocked:
+        pass
+    else:
+        lock2.release()
+        raise AssertionError, ("did not raise AlreadyLocked in thread %s" %
+                               threading.currentThread().getName())
 
-    >>> # Timeout test
-    >>> e1, e2 = threading.Event(), threading.Event()
-    >>> t = _in_thread(_lock_wait_unlock, e1, e2)
-    >>> e1.wait() # wait for thread t to acquire filelock
-    >>> lock2 = FileLock(_testfile())
-    >>> lock2.is_locked()
-    True
-    >>> try:
-    ...   lock2.acquire(timeout=0.1)
-    ... except LockTimeout:
-    ...   pass
-    ... except Exception, e:
-    ...   print 'unexpected exception', repr(e)
-    ... else:
-    ...   lock2.release()
-    ...   print 'thread', threading.currentThread().getName(),
-    ...   print 'erroneously locked an already locked file.'
-    ...
-    >>> e2.set()
-    >>> t.join()
-    """
-    pass
+    e2.set()          # tell thread t to release lock
+    t.join()
 
-def test_release():
-    """
-    >>> lock = FileLock(_testfile())
-    >>> lock.acquire()
-    >>> lock.release()
-    >>> lock.is_locked()
-    False
-    >>> lock.i_am_locking()
-    False
-    >>> try:
-    ...   lock.release()
-    ... except NotLocked:
-    ...   pass
-    ... except NotMyLock:
-    ...   print 'unexpected exception', NotMyLock
-    ... except Exception, e:
-    ...   print 'unexpected exception', repr(e)
-    ... else:
-    ...   print 'erroneously unlocked file'
+    # Timeout test
+    e1, e2 = threading.Event(), threading.Event()
+    t = _in_thread(_lock_wait_unlock, e1, e2)
+    e1.wait()                        # wait for thread t to acquire filelock
+    lock2 = FileLock(_testfile())
+    assert lock2.is_locked()
+    try:
+        lock2.acquire(timeout=0.1)
+    except LockTimeout:
+        pass
+    else:
+        lock2.release()
+        raise AssertionError, ("did not raise LockTimeout in thread %s" %
+                               threading.currentThread().getName())
+    
+    e2.set()
+    t.join()
 
-    >>> e1, e2 = threading.Event(), threading.Event()
-    >>> t = _in_thread(_lock_wait_unlock, e1, e2)
-    >>> e1.wait()
-    >>> lock2 = FileLock(_testfile())
-    >>> lock2.is_locked()
-    True
-    >>> lock2.i_am_locking()
-    False
-    >>> try:
-    ...   lock2.release()
-    ... except NotMyLock:
-    ...   pass
-    ... except Exception, e:
-    ...   print 'unexpected exception', repr(e)
-    ... else:
-    ...   print 'erroneously unlocked a file locked by another thread.'
-    ...
-    >>> e2.set()
-    >>> t.join()
-    """
-    pass
+def _release():
+    lock = FileLock(_testfile())
+    lock.acquire()
+    assert lock.is_locked()
+    lock.release()
+    assert not lock.is_locked()
+    assert not lock.i_am_locking()
+    try:
+        lock.release()
+    except NotLocked:
+        pass
+    except NotMyLock:
+        raise AssertionError, 'unexpected exception: %s' % NotMyLock
+    else:
+        raise AssertionError, 'erroneously unlocked file'
 
-def test_is_locked():
-    """
-    >>> lock = FileLock(_testfile())
-    >>> lock.acquire()
-    >>> lock.is_locked()
-    True
-    >>> lock.release()
-    >>> lock.is_locked()
-    False
-    """
-    pass
+    e1, e2 = threading.Event(), threading.Event()
+    t = _in_thread(_lock_wait_unlock, e1, e2)
+    e1.wait()
+    lock2 = FileLock(_testfile())
+    assert lock2.is_locked()
+    assert not lock2.i_am_locking()
+    try:
+        lock2.release()
+    except NotMyLock:
+        pass
+    else:
+        raise AssertionError, ('erroneously unlocked a file locked'
+                               ' by another thread.')
+    e2.set()
+    t.join()
 
-def test_i_am_locking():
-    """
-    >>> lock1 = FileLock(_testfile(), threaded=False)
-    >>> lock1.acquire()
-    >>> lock2 = FileLock(_testfile())
-    >>> lock1.i_am_locking()
-    True
-    >>> lock2.i_am_locking()
-    False
-    >>> try:
-    ...   lock2.acquire(timeout=2)
-    ... except LockTimeout:
-    ...   lock2.break_lock()
-    ...   lock2.is_locked()
-    ...   lock1.is_locked()
-    ...   lock2.acquire()
-    ... else:
-    ...   print 'expected LockTimeout...'
-    ...
-    False
-    False
-    >>> lock1.i_am_locking()
-    False
-    >>> lock2.i_am_locking()
-    True
-    >>> lock2.release()
-    """
-    pass
+def _is_locked():
+    lock = FileLock(_testfile())
+    lock.acquire()
+    assert lock.is_locked()
+    lock.release()
+    assert not lock.is_locked()
 
-def test_break_lock():
-    """
-    >>> lock = FileLock(_testfile())
-    >>> lock.acquire()
-    >>> lock2 = FileLock(_testfile())
-    >>> lock2.is_locked()
-    True
-    >>> lock2.break_lock()
-    >>> lock2.is_locked()
-    False
-    >>> try:
-    ...   lock.release()
-    ... except NotLocked:
-    ...   pass
-    ... except Exception, e:
-    ...   print 'unexpected exception', repr(e)
-    ... else:
-    ...   print 'break lock failed'
-    """
-    pass
+def _i_am_locking():
+    lock1 = FileLock(_testfile(), threaded=False)
+    lock1.acquire()
+    assert lock1.is_locked()
+    lock2 = FileLock(_testfile())
+    assert lock1.i_am_locking()
+    assert not lock2.i_am_locking()
+    try:
+        lock2.acquire(timeout=2)
+    except LockTimeout:
+        lock2.break_lock()
+        assert not lock2.is_locked()
+        assert not lock1.is_locked()
+        lock2.acquire()
+    else:
+        raise AssertionError('expected LockTimeout...')
+    assert not lock1.i_am_locking()
+    assert lock2.i_am_locking()
+    lock2.release()
 
-def test_enter():
-    """
-    >>> lock = FileLock(_testfile())
-    >>> with lock:
-    ...   lock.is_locked()
-    ...
-    True
-    >>> lock.is_locked()
-    False
-    """
-    pass
+def _break_lock():
+    lock = FileLock(_testfile())
+    lock.acquire()
+    assert lock.is_locked()
+    lock2 = FileLock(_testfile())
+    assert lock2.is_locked()
+    lock2.break_lock()
+    assert not lock2.is_locked()
+    try:
+        lock.release()
+    except NotLocked:
+        pass
+    else:
+        raise AssertionError('break lock failed')
 
-def test_LinkFileLock_acquire():
-    """
-    >>> d = _testfile()
-    >>> os.mkdir(d)
-    >>> os.chmod(d, 0444)
-    >>> try:
-    ...   lock = LinkFileLock(os.path.join(d, 'test'))
-    ...   try:
-    ...     lock.acquire()
-    ...   except LockFailed:
-    ...     pass
-    ...   else:
-    ...     lock.release()
-    ...     print 'erroneously locked', os.path.join(d, 'test')
-    ... finally:
-    ...   os.chmod(d, 0664)
-    ...   os.rmdir(d)
-    """
-    pass
+def _enter():
+    lock = FileLock(_testfile())
+    with lock:
+        assert lock.is_locked()
+    assert not lock.is_locked()
 
 def _in_thread(func, *args, **kwargs):
-    """Execute func(*args, **kwargs) after dt seconds.
-
-    Helper for docttests.
-    """
+    """Execute func(*args, **kwargs) after dt seconds. Helper for tests."""
     def _f():
         func(*args, **kwargs)
     t = threading.Thread(target=_f, name='/*/*')
@@ -204,70 +138,48 @@ def _in_thread(func, *args, **kwargs):
     return t
 
 def _testfile():
-    """Return platform-appropriate file.
-
-    Helper for doctests.
-    """
+    """Return platform-appropriate file.  Helper for tests."""
     import tempfile
     return os.path.join(tempfile.gettempdir(), 'trash-%s' % os.getpid())
 
 def _lock_wait_unlock(event1, event2):
-    """Lock from another thread.
-
-    Helper for doctests.
-    """
+    """Lock from another thread.  Helper for tests."""
     with FileLock(_testfile()):
         event1.set()  # we're in,
         event2.wait() # wait for boss's permission to leave
 
-def _test():
+def test_variants():
     global FileLock
 
-    import doctest
-    import sys
-
-    def test_object(c):
-        nfailed = ntests = 0
-        for (obj, recurse) in ((c, True),
-                               (LockBase, True),
-                               (sys.modules["__main__"], False)):
-            tests = doctest.DocTestFinder(recurse=recurse).find(obj)
-            runner = doctest.DocTestRunner(verbose="-v" in sys.argv)
-            tests.sort(key = lambda test: test.name)
-            for test in tests:
-                f, t = runner.run(test)
-                nfailed += f
-                ntests += t
-        print FileLock.__name__, "tests:", ntests, "failed:", nfailed
-        return nfailed, ntests
-
-    nfailed = ntests = 0
+    def _helper():
+        _acquire()
+        _release()
+        _is_locked()
+        _i_am_locking()
+        _break_lock()
+        _enter()
 
     if hasattr(os, "link"):
-        FileLock = LinkFileLock
-        f, t = test_object(FileLock)
-        nfailed += f
-        ntests += t
+        FileLock, _Lock = LinkFileLock, FileLock
+        try:
+            _helper()
+        finally:
+            FileLock = _Lock
 
     if hasattr(os, "mkdir"):
-        FileLock = MkdirFileLock
-        f, t = test_object(FileLock)
-        nfailed += f
-        ntests += t
+        FileLock, _Lock = MkdirFileLock, FileLock
+        try:
+            _helper()
+        finally:
+            FileLock = _Lock
 
     try:
         import sqlite3
     except ImportError:
-        print "SQLite3 is unavailable - not testing SQLiteFileLock."
+        pass
     else:
-        print "Testing SQLiteFileLock with sqlite", sqlite3.sqlite_version,
-        print "& pysqlite", sqlite3.version
-        FileLock = SQLiteFileLock
-        f, t = test_object(FileLock)
-        nfailed += f
-        ntests += t
-
-    print "total tests:", ntests, "total failed:", nfailed
-
-if __name__ == "__main__":
-    _test()
+        FileLock, _Lock = SQLiteFileLock, FileLock
+        try:
+            _helper()
+        finally:
+            FileLock = _Lock
