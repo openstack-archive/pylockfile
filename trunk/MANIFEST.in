@@ -1,2 +1,2 @@
-include README LICENSE MANIFEST lockfile.py setup.py 2.4.diff
+include README LICENSE MANIFEST lockfile.py setup.py 2.4.diff ACKS
 recursive-include doc *.rst
