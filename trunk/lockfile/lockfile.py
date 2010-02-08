@@ -29,6 +29,13 @@ False
 True
 >>> print lock.is_locked()
 False
+>>> # It is okay to lock twice from the same thread...
+>>> with lock:
+...     lock.acquire()
+...
+>>> # Though no counter is kept, so you can't unlock multiple times...
+>>> print lock.is_locked()
+False
 
 Exceptions:
 
@@ -553,7 +560,16 @@ class SQLiteFileLock(LockBase):
                 else:
                     # Yup.  We're done, so go home.
                     return
-
+            else:
+                # Check to see if we are the only lock holder.
+                cursor.execute("select * from locks"
+                               "  where unique_name = ?",
+                               (self.unique_name,))
+                rows = cursor.fetchall()
+                if len(rows) == 1:
+                    # We're the locker, so go home.
+                    return
+                    
             # Maybe we should wait a bit longer.
             if timeout is not None and time.time() > end_time:
                 if timeout > 0:
@@ -664,13 +680,13 @@ def _test():
 
     if hasattr(os, "link"):
         FileLock = LinkFileLock
-        f, t = test_object(LockBase)
+        f, t = test_object(sys.modules["__main__"])
         nfailed += f
         ntests += t
 
     if hasattr(os, "mkdir"):
         FileLock = MkdirFileLock
-        f, t = test_object(LockBase)
+        f, t = test_object(sys.modules["__main__"])
         nfailed += f
         ntests += t
 
@@ -682,7 +698,7 @@ def _test():
         print "Testing SQLiteFileLock with sqlite", sqlite3.sqlite_version,
         print "& pysqlite", sqlite3.version
         FileLock = SQLiteFileLock
-        f, t = test_object(LockBase)
+        f, t = test_object(sys.modules["__main__"])
         nfailed += f
         ntests += t
 
