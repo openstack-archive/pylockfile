@@ -120,13 +120,15 @@ Implementing Other Locking Schemes
 There is a :class:`_FileLock` base class which can be used as the foundation
 for other locking schemes.  For example, if shared filesystems are not
 available, :class:`_FileLock` could be subclassed to provide locking via an
-SQL database.
+SQL database.  There are some limitations in the test cases which would have
+to be resolved (looking for particular files in the filesystem, for
+example).
 
 FileLock Objects
 ----------------
 
-:class:`FileLock` objects support the :term:`context manager` protocol use
-with the statement:`with` statement.
+:class:`FileLock` objects support the :term:`context manager` protocol used
+by the statement:`with` statement.
 
 :class:`FileLock` has the following user-visible methods:
 
