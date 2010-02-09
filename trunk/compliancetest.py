@@ -4,7 +4,7 @@ import shutil
 
 import lockfile
 
-class _ComplianceTest(object):
+class ComplianceTest(object):
     def __init__(self):
         self.saved_class = lockfile.FileLock
 
@@ -155,6 +155,25 @@ class _ComplianceTest(object):
                 pass
             else:
                 raise AssertionError('break lock failed')
+
+    def _lock_wait_unlock(self, event1, event2):
+        """Lock from another thread.  Helper for tests."""
+        l = lockfile.FileLock(self._testfile())
+        l.acquire()
+        try:
+            event1.set()  # we're in,
+            event2.wait() # wait for boss's permission to leave
+        finally:
+            l.release()
+
+    def test_enter(self):
+        lock = lockfile.FileLock(self._testfile())
+        lock.acquire()
+        try:
+            assert lock.is_locked(), "Not locked after acquire!"
+        finally:
+            lock.release()
+        assert not lock.is_locked(), "still locked after release!"
 
 def _in_thread(func, *args, **kwargs):
     """Execute func(*args, **kwargs) after dt seconds. Helper for tests."""

@@ -56,12 +56,12 @@ import os
 import threading
 import time
 import errno
+import urllib
 
 # Work with PEP8 and non-PEP8 versions of threading module.
-try:
-    threading.current_thread
-except AttributeError:
+if not hasattr(threading, "current_thread"):
     threading.current_thread = threading.currentThread
+if not hasattr(threading.Thread, "get_name"):
     threading.Thread.get_name = threading.Thread.getName
 
 __all__ = ['Error', 'LockError', 'LockTimeout', 'AlreadyLocked',
@@ -163,7 +163,8 @@ class LockBase:
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:
-            tname = "%s-" % threading.current_thread().get_name()
+            name = threading.current_thread().get_name()
+            tname = "%s-" % urllib.quote(name, safe="")
         else:
             tname = ""
         dirname = os.path.dirname(self.lock_file)
@@ -234,7 +235,7 @@ class LinkFileLock(LockBase):
         try:
             open(self.unique_name, "wb").close()
         except IOError:
-            raise LockFailed
+            raise LockFailed("failed to create %s" % self.unique_name)
 
         end_time = time.time()
         if timeout is not None and timeout > 0:
@@ -293,7 +294,7 @@ class MkdirFileLock(LockBase):
         """
         LockBase.__init__(self, path, threaded)
         if threaded:
-            tname = "%x-" % thread.get_ident()
+            tname = "%x-" % (threading.current_thread().ident or 0)
         else:
             tname = ""
         # Lock file itself is a directory.  Place the unique file name into
@@ -332,7 +333,7 @@ class MkdirFileLock(LockBase):
                     time.sleep(wait)
                 else:
                     # Couldn't create the lock for some other reason
-                    raise LockFailed
+                    raise LockFailed("failed to create %s" % self.lock_file)
             else:
                 open(self.unique_name, "wb").close()
                 return

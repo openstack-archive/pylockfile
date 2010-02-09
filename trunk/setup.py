@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-V = "0.7"
+V = "0.8"
 
 from distutils.core import setup
 setup(name='lockfile',
@@ -19,7 +19,7 @@ the API is identical across both Unix (including Linux and Mac) and
 Windows platforms.  The lock mechanism relies on the atomic nature of
 the link (on Unix) and mkdir (on Windows) system calls.
 
-Version %s fixes a bug in stringifying the current thread name.""" % V,
+Version %s fixes several bugs relating to threads and test reorganization.""" % V,
       py_modules=['lockfile'],
       license='MIT License',
       classifiers=[
