@@ -163,14 +163,14 @@ class LockBase:
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:
-            name = threading.current_thread().get_name()
-            tname = "%s-" % urllib.quote(name, safe="")
+            self.tname = "%x-" % (threading.current_thread().ident &
+                                  0xffffffff)
         else:
-            tname = ""
+            self.tname = ""
         dirname = os.path.dirname(self.lock_file)
         self.unique_name = os.path.join(dirname,
                                         "%s.%s%s" % (self.hostname,
-                                                     tname,
+                                                     self.tname,
                                                      self.pid))
 
     def acquire(self, timeout=None):
@@ -293,15 +293,11 @@ class MkdirFileLock(LockBase):
         >>> lock = MkdirFileLock('somefile', threaded=False)
         """
         LockBase.__init__(self, path, threaded)
-        if threaded:
-            tname = "%x-" % (threading.current_thread().ident or 0)
-        else:
-            tname = ""
         # Lock file itself is a directory.  Place the unique file name into
         # it.
         self.unique_name  = os.path.join(self.lock_file,
                                          "%s.%s%s" % (self.hostname,
-                                                      tname,
+                                                      self.tname,
                                                       self.pid))
 
     def acquire(self, timeout=None):
@@ -360,7 +356,7 @@ class MkdirFileLock(LockBase):
             os.rmdir(self.lock_file)
 
 class SQLiteFileLock(LockBase):
-    "Demonstration of using same SQL-based locking."
+    "Demonstrate SQL-based locking."
 
     import tempfile
     _fd, testdb = tempfile.mkstemp()
@@ -369,6 +365,10 @@ class SQLiteFileLock(LockBase):
     del _fd, tempfile
 
     def __init__(self, path, threaded=True):
+        """
+        >>> lock = SQLiteFileLock('somefile')
+        >>> lock = SQLiteFileLock('somefile', threaded=False)
+        """
         LockBase.__init__(self, path, threaded)
         self.lock_file = unicode(self.lock_file)
         self.unique_name = unicode(self.unique_name)
