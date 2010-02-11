@@ -272,6 +272,8 @@ def SQLiteFileLock(*args, **kwds):
     return _fl_helper(sqlitefilelock.SQLiteFileLock, *args, **kwds)
 
 if hasattr(os, "link"):
-    FileLock = LinkFileLock
+    import linkfilelock as _lfl
+    FileLock = _lfl.LinkFileLock
 else:
-    FileLock = MkdirFileLock
+    import mkdirfilelock as _mfl
+    FileLock = _mfl.MkdirFileLock
