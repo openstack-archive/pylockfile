@@ -3,8 +3,13 @@ LICENSE
 MANIFEST
 README
 RELEASE-NOTES
-lockfile.py
 setup.py
+doc/Makefile
+doc/conf.py
 doc/glossary.rst
 doc/index.rst
 doc/lockfile.rst
+lockfile/__init__.py
+lockfile/linkfilelock.py
+lockfile/mkdirfilelock.py
+lockfile/sqlitefilelock.py
