@@ -1,3 +1,3 @@
 include README RELEASE-NOTES LICENSE MANIFEST
-include lockfile setup.py ACKS
+include lockfile setup.py ACKS 2.4.diff
 recursive-include doc *.rst conf.py Makefile
