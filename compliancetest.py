@@ -123,22 +123,29 @@ class ComplianceTest(object):
     def test_i_am_locking(self):
         lock1 = lockfile.FileLock(self._testfile(), threaded=False)
         lock1.acquire()
-        assert lock1.is_locked()
-        lock2 = lockfile.FileLock(self._testfile())
-        assert lock1.i_am_locking()
-        assert not lock2.i_am_locking()
         try:
-            lock2.acquire(timeout=2)
-        except lockfile.LockTimeout:
-            lock2.break_lock()
-            assert not lock2.is_locked()
-            assert not lock1.is_locked()
-            lock2.acquire()
-        else:
-            raise AssertionError('expected LockTimeout...')
-        assert not lock1.i_am_locking()
-        assert lock2.i_am_locking()
-        lock2.release()
+            assert lock1.is_locked()
+            lock2 = lockfile.FileLock(self._testfile())
+            try:
+                assert lock1.i_am_locking()
+                assert not lock2.i_am_locking()
+                try:
+                    lock2.acquire(timeout=2)
+                except lockfile.LockTimeout:
+                    lock2.break_lock()
+                    assert not lock2.is_locked()
+                    assert not lock1.is_locked()
+                    lock2.acquire()
+                else:
+                    raise AssertionError('expected LockTimeout...')
+                assert not lock1.i_am_locking()
+                assert lock2.i_am_locking()
+            finally:
+                if lock2.i_am_locking():
+                    lock2.release()
+        finally:
+            if lock1.i_am_locking():
+                lock1.release()
 
     def test_break_lock(self):
         for tbool in (True, False):
