@@ -1,3 +1,16 @@
+Version 0.9
+===========
+
+* The lockfile module was reorganized into a package.
+
+* The names of the three main classes have changed as follows:
+
+    LinkFileLock -> LinkLockFile
+    MkdirFileLock -> MkdirLockFile
+    SQLiteFileLock -> SQLiteLockFile
+
+* A PIDLockFile class was added.
+
 Version 0.3
 ===========
 

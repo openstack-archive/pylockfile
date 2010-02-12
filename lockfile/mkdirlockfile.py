@@ -6,12 +6,12 @@ import errno
 from lockfile import LockBase, LockFailed, NotLocked, NotMyLock, \
      LockTimeout, AlreadyLocked
 
-class MkdirFileLock(LockBase):
+class MkdirLockFile(LockBase):
     """Lock file by creating a directory."""
     def __init__(self, path, threaded=True):
         """
-        >>> lock = MkdirFileLock('somefile')
-        >>> lock = MkdirFileLock('somefile', threaded=False)
+        >>> lock = MkdirLockFile('somefile')
+        >>> lock = MkdirLockFile('somefile', threaded=False)
         """
         LockBase.__init__(self, path, threaded)
         # Lock file itself is a directory.  Place the unique file name into

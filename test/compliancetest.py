@@ -6,7 +6,7 @@ import lockfile
 
 class ComplianceTest(object):
     def __init__(self):
-        self.saved_class = lockfile.FileLock
+        self.saved_class = lockfile.LockFile
 
     def _testfile(self):
         """Return platform-appropriate file.  Helper for tests."""
@@ -14,7 +14,7 @@ class ComplianceTest(object):
         return os.path.join(tempfile.gettempdir(), 'trash-%s' % os.getpid())
 
     def setup(self):
-        lockfile.FileLock = self.class_to_test
+        lockfile.LockFile = self.class_to_test
 
     def teardown(self):
         tf = self._testfile()
@@ -22,12 +22,12 @@ class ComplianceTest(object):
             shutil.rmtree(tf)
         elif os.path.isfile(tf):
             os.unlink(tf)
-        lockfile.FileLock = self.saved_class
+        lockfile.LockFile = self.saved_class
 
     def test_acquire_basic(self):
         # As simple as it gets.
         for tbool in (True, False):
-            lock = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock = lockfile.LockFile(self._testfile(), threaded=tbool)
             lock.acquire()
             assert lock.is_locked()
             lock.release()
@@ -39,7 +39,7 @@ class ComplianceTest(object):
             e1, e2 = threading.Event(), threading.Event()
             t = _in_thread(self._lock_wait_unlock, e1, e2)
             e1.wait()         # wait for thread t to acquire lock
-            lock2 = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock2 = lockfile.LockFile(self._testfile(), threaded=tbool)
             assert lock2.is_locked()
             assert not lock2.i_am_locking()
 
@@ -61,8 +61,8 @@ class ComplianceTest(object):
         for tbool in (True, False):
             e1, e2 = threading.Event(), threading.Event()
             t = _in_thread(self._lock_wait_unlock, e1, e2)
-            e1.wait()                # wait for thread t to acquire filelock
-            lock2 = lockfile.FileLock(self._testfile(), threaded=tbool)
+            e1.wait()                # wait for thread t to acquire lock
+            lock2 = lockfile.LockFile(self._testfile(), threaded=tbool)
             assert lock2.is_locked()
             try:
                 lock2.acquire(timeout=0.1)
@@ -78,7 +78,7 @@ class ComplianceTest(object):
 
     def test_release_basic(self):
         for tbool in (True, False):
-            lock = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock = lockfile.LockFile(self._testfile(), threaded=tbool)
             lock.acquire()
             assert lock.is_locked()
             lock.release()
@@ -99,7 +99,7 @@ class ComplianceTest(object):
             e1, e2 = threading.Event(), threading.Event()
             t = _in_thread(self._lock_wait_unlock, e1, e2)
             e1.wait()
-            lock2 = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock2 = lockfile.LockFile(self._testfile(), threaded=tbool)
             assert lock2.is_locked()
             assert not lock2.i_am_locking()
             try:
@@ -114,18 +114,18 @@ class ComplianceTest(object):
 
     def test_is_locked(self):
         for tbool in (True, False):
-            lock = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock = lockfile.LockFile(self._testfile(), threaded=tbool)
             lock.acquire()
             assert lock.is_locked()
             lock.release()
             assert not lock.is_locked()
 
     def test_i_am_locking(self):
-        lock1 = lockfile.FileLock(self._testfile(), threaded=False)
+        lock1 = lockfile.LockFile(self._testfile(), threaded=False)
         lock1.acquire()
         try:
             assert lock1.is_locked()
-            lock2 = lockfile.FileLock(self._testfile())
+            lock2 = lockfile.LockFile(self._testfile())
             try:
                 assert lock1.i_am_locking()
                 assert not lock2.i_am_locking()
@@ -149,10 +149,10 @@ class ComplianceTest(object):
 
     def test_break_lock(self):
         for tbool in (True, False):
-            lock = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock = lockfile.LockFile(self._testfile(), threaded=tbool)
             lock.acquire()
             assert lock.is_locked()
-            lock2 = lockfile.FileLock(self._testfile(), threaded=tbool)
+            lock2 = lockfile.LockFile(self._testfile(), threaded=tbool)
             assert lock2.is_locked()
             lock2.break_lock()
             assert not lock2.is_locked()
@@ -165,7 +165,7 @@ class ComplianceTest(object):
 
     def _lock_wait_unlock(self, event1, event2):
         """Lock from another thread.  Helper for tests."""
-        l = lockfile.FileLock(self._testfile())
+        l = lockfile.LockFile(self._testfile())
         l.acquire()
         try:
             event1.set()  # we're in,
@@ -174,7 +174,7 @@ class ComplianceTest(object):
             l.release()
 
     def test_enter(self):
-        lock = lockfile.FileLock(self._testfile())
+        lock = lockfile.LockFile(self._testfile())
         lock.acquire()
         try:
             assert lock.is_locked(), "Not locked after acquire!"

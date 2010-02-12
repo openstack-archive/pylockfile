@@ -29,19 +29,19 @@
    new in 2.4, so will have to be rewritten somewhat to allow testing on
    2.3.  As they say, patches welcome. ``;-)``
 
-The :mod:`lockfile` package exports a :class:`FileLock` class which provides
+The :mod:`lockfile` package exports a :class:`LockFile` class which provides
 a simple API for locking files.  Unlike the Windows :func:`msvcrt.locking`
 function, the Unix :func:`fcntl.flock`, :func:`fcntl.lockf` and the
 deprecated :mod:`posixfile` module, the API is identical across both Unix
 (including Linux and Mac) and Windows platforms.  The lock mechanism relies
 on the atomic nature of the :func:`link` (on Unix) and :func:`mkdir` (On
 Windows) system calls.  It also contains several lock-method-specific
-modules: :mod:`lockfile.linkfilelock`, :mod:`lockfile.mkdirfilelock`, and
-:mod:`lockfile.sqlitefilelock`, each one exporting a single class.  For
+modules: :mod:`lockfile.linklockfile`, :mod:`lockfile.mkdirlockfile`, and
+:mod:`lockfile.sqlitelockfile`, each one exporting a single class.  For
 backwards compatibility with versions before 0.9 the :class:`LinkFileLock`,
-:class:`MkdirFileLock` and :class:`SQLiteFileLock` classes are exposed as
+:class:`MkdirFileLock` and :class:`SQLiteFileLock` objects are exposed as
 attributes of the top-level lockfile package, though this use was deprecated
-starting with version 0.9.
+starting with version 0.9 and will be removed in version 1.0.
 
 .. note::
 
@@ -103,7 +103,7 @@ The module defines the following exceptions:
 
 The following classes are provided:
 
-.. class:: linkfilelock.LinkFileLock(path, threaded=True)
+.. class:: linklockfile.LinkLockFile(path, threaded=True)
 
    This class uses the :func:`link(2)` system call as the basic lock
    mechanism.  *path* is an object in the file system to be locked.  It need
@@ -112,17 +112,17 @@ The following classes are provided:
    optional, but when set to :const:`True` locks will be distinguished
    between threads in the same process.
 
-.. class:: mkdirfilelock.MkdirFileLock(path, threaded=True)
+.. class:: mkdirlockfile.MkdirLockFile(path, threaded=True)
 
    This class uses the :func:`mkdir(2)` system call as the basic lock
    mechanism.  The parameters have the same meaning as for the
-   :class:`LinkFileLock` class.
+   :class:`LinkLockFile` class.
 
-.. class:: sqlitefilelock.SQLiteFileLock(path, threaded=True)
+.. class:: sqlitelockfile.SQLiteLockFile(path, threaded=True)
 
    This class uses the :mod:`sqlite3` module to implement the lock
    mechanism.  The parameters have the same meaning as for the
-   :class:`LinkFileLock` class.
+   :class:`LinkLockFile` class.
 
 .. class:: LockBase(path, threaded=True)
 
@@ -130,11 +130,11 @@ The following classes are provided:
    at the lockfile package level so programmers can implement other locking
    schemes.
 
-By default, the :const:`FileLock` object refers to the
-:class:`mkdirfilelock.MkdirFileLock` class on Windows.  On all other
-platforms it refers to the :class:`linkfilelock.LinkFileLock` class.
+By default, the :const:`LockFile` object refers to the
+:class:`mkdirlockfile.MkdirLockFile` class on Windows.  On all other
+platforms it refers to the :class:`linklockfile.LinkLockFile` class.
 
-When locking a file the :class:`linkfilelock.LinkFileLock` class creates a
+When locking a file the :class:`linklockfile.LinkLockFile` class creates a
 uniquely named hard link to an empty lock file.  That hard link contains the
 hostname, process id, and if locks between threads are distinguished, the
 thread identifier.  For example, if you want to lock access to a file named
@@ -142,7 +142,7 @@ thread identifier.  For example, if you want to lock access to a file named
 enabled the hard link is named HOSTNAME-THREADID-PID.  With only per-process
 locks enabled the hard link is named HOSTNAME--PID.
 
-When using the :class:`mkdirfilelock.MkdirFileLock` class the lock file is a
+When using the :class:`mkdirlockfile.MkdirLockFile` class the lock file is a
 directory.  Referring to the example above, README.lock will be a directory
 and HOSTNAME-THREADID-PID will be an empty file within that directory.
 
@@ -159,10 +159,10 @@ and HOSTNAME-THREADID-PID will be an empty file within that directory.
       Provides the current best way to lock files on Unix systems
       (:func:`lockf` and :func:`flock`).
 
-FileLock Objects
+LockFile Objects
 ----------------
 
-:class:`FileLock` objects support the :term:`context manager` protocol used
+:class:`LockFile` objects support the :term:`context manager` protocol used
 by the statement:`with` statement.  The timeout option is not supported when
 used in this fashion.  While support for timeouts could be implemented,
 there is no support for handling the eventual :exc:`Timeout` exceptions
@@ -171,11 +171,11 @@ raised by the :func:`__enter__` method, so you would have to protect the
 construct would not be any simpler than just using a :keyword:`try`
 statement in the first place.
 
-:class:`FileLock` has the following user-visible methods:
+:class:`LockFile` has the following user-visible methods:
 
-.. method:: FileLock.acquire(timeout=None)
+.. method:: LockFile.acquire(timeout=None)
 
-   Lock the file associated with the :class:`FileLock` object.  If the
+   Lock the file associated with the :class:`LockFile` object.  If the
    *timeout* is omitted or :const:`None` the caller will block until the
    file is unlocked by the object currently holding the lock.  If the
    *timeout* is zero or a negative number the :exc:`AlreadyLocked` exception
@@ -185,9 +185,9 @@ statement in the first place.
    released within that period the :exc:`LockTimeout` exception will be
    raised.
 
-.. method:: FileLock.release()
+.. method:: LockFile.release()
 
-   Unlock the file associated with the :class:`FileLock` object.  If the
+   Unlock the file associated with the :class:`LockFile` object.  If the
    file is not currently locked, the :exc:`NotLocked` exception is raised.
    If the file is locked by another thread or process the :exc:`NotMyLock`
    exception is raised.
@@ -211,23 +211,23 @@ Examples
 
 This example is the "hello world" for the :mod:`lockfile` package::
 
-    from lockfile import FileLock
-    lock = FileLock("/some/file/or/other")
+    from lockfile import LockFile
+    lock = LockFile("/some/file/or/other")
     with lock:
         print lock.path, 'is locked.'
 
 To use this with Python 2.4, you can execute::
 
-    frm lockfile import FileLock
-    lock = FileLock("/some/file/or/other")
+    frm lockfile import LockFile
+    lock = LockFile("/some/file/or/other")
     lock.acquire()
     print lock.path, 'is locked.'
     lock.release()
 
 If you don't want to wait forever, you might try::	
 
-    from lockfile import FileLock
-    lock = FileLock("/some/file/or/other")
+    from lockfile import LockFile
+    lock = LockFile("/some/file/or/other")
     while not lock.i_am_locking():
 	try:
 	    lock.acquire(timeout=60)    # wait up to 60 seconds

@@ -1,9 +1,16 @@
 import sys
 
-import lockfile
+import lockfile.linklockfile, lockfile.mkdirlockfile
 
 from compliancetest import ComplianceTest
     
+class TestLinkLockFile(ComplianceTest):
+    class_to_test = lockfile.linklockfile.LinkLockFile
+
+class TestMkdirLockFile(ComplianceTest):
+    class_to_test = lockfile.mkdirlockfile.MkdirLockFile
+
+# Check backwards compatibility
 class TestLinkFileLock(ComplianceTest):
     class_to_test = lockfile.LinkFileLock
 
@@ -15,5 +22,6 @@ try:
 except ImportError:
     pass
 else:
-    class TestSQLiteFileLock(ComplianceTest):
-        class_to_test = lockfile.SQLiteFileLock
+    import lockfile.sqlitelockfile
+    class TestSQLiteLockFile(ComplianceTest):
+        class_to_test = lockfile.sqlitelockfile.SQLiteLockFile

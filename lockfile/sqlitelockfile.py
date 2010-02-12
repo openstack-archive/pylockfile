@@ -3,7 +3,7 @@ import os
 
 from lockfile import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
 
-class SQLiteFileLock(LockBase):
+class SQLiteLockFile(LockBase):
     "Demonstrate SQL-based locking."
 
     import tempfile
@@ -14,15 +14,15 @@ class SQLiteFileLock(LockBase):
 
     def __init__(self, path, threaded=True):
         """
-        >>> lock = SQLiteFileLock('somefile')
-        >>> lock = SQLiteFileLock('somefile', threaded=False)
+        >>> lock = SQLiteLockFile('somefile')
+        >>> lock = SQLiteLockFile('somefile', threaded=False)
         """
         LockBase.__init__(self, path, threaded)
         self.lock_file = unicode(self.lock_file)
         self.unique_name = unicode(self.unique_name)
 
         import sqlite3
-        self.connection = sqlite3.connect(SQLiteFileLock.testdb)
+        self.connection = sqlite3.connect(SQLiteLockFile.testdb)
         
         c = self.connection.cursor()
         try:
@@ -36,7 +36,7 @@ class SQLiteFileLock(LockBase):
         else:
             self.connection.commit()
             import atexit
-            atexit.register(os.unlink, SQLiteFileLock.testdb)
+            atexit.register(os.unlink, SQLiteLockFile.testdb)
 
     def acquire(self, timeout=None):
         end_time = time.time()

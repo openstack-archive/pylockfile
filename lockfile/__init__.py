@@ -7,7 +7,7 @@ Locking is done on a per-thread basis instead of a per-process basis.
 
 Usage:
 
->>> lock = FileLock('somefile')
+>>> lock = LockFile('somefile')
 >>> try:
 ...     lock.acquire()
 ... except AlreadyLocked:
@@ -21,7 +21,7 @@ got lock
 True
 >>> lock.release()
 
->>> lock = FileLock('somefile')
+>>> lock = LockFile('somefile')
 >>> print lock.is_locked()
 False
 >>> with lock:
@@ -30,7 +30,7 @@ True
 >>> print lock.is_locked()
 False
 
->>> lock = FileLock('somefile')
+>>> lock = LockFile('somefile')
 >>> # It is okay to lock twice from the same thread...
 >>> with lock:
 ...     lock.acquire()
@@ -68,7 +68,7 @@ if not hasattr(threading.Thread, "get_name"):
 
 __all__ = ['Error', 'LockError', 'LockTimeout', 'AlreadyLocked',
            'LockFailed', 'UnlockError', 'NotLocked', 'NotMyLock',
-           'LinkFileLock', 'MkdirFileLock', 'SQLiteFileLock',
+           'LinkLockFile', 'MkdirLockFile', 'SQLiteLockFile',
            'LockBase']
 
 class Error(Exception):
@@ -231,8 +231,8 @@ class LockBase:
         """
         self.release()
 
-def _fl_helper(cls, *args, **kwds):
-    warnings.warn("Import LinkFileLock from lockfile.linkfilelock",
+def _fl_helper(cls, mod, *args, **kwds):
+    warnings.warn("Import from %s module instead of lockfile package" % mod,
                   DeprecationWarning, stacklevel=2)
     # This is a bit funky, but it's only for awhile.  The way the unit tests
     # are constructed this function winds up as an unbound method, so it
@@ -247,33 +247,39 @@ def _fl_helper(cls, *args, **kwds):
 def LinkFileLock(*args, **kwds):
     """Factory function provided for backwards compatibility.
 
-    Do not use in new code.  Instead, import LinkFileLock from the
-    lockfile.linkfilelock module.
+    Do not use in new code.  Instead, import LinkLockFile from the
+    lockfile.linklockfile module.
     """
-    import linkfilelock
-    return _fl_helper(linkfilelock.LinkFileLock, *args, **kwds)
+    import linklockfile
+    return _fl_helper(linklockfile.LinkLockFile, "lockfile.linklockfile",
+                      *args, **kwds)
 
 def MkdirFileLock(*args, **kwds):
     """Factory function provided for backwards compatibility.
 
-    Do not use in new code.  Instead, import MkdirFileLock from the
-    lockfile.mkdirfilelock module.
+    Do not use in new code.  Instead, import MkdirLockFile from the
+    lockfile.mkdirlockfile module.
     """
-    import mkdirfilelock
-    return _fl_helper(mkdirfilelock.MkdirFileLock, *args, **kwds)
+    import mkdirlockfile
+    return _fl_helper(mkdirlockfile.MkdirLockFile, "lockfile.mkdirlockfile",
+                      *args, **kwds)
 
 def SQLiteFileLock(*args, **kwds):
     """Factory function provided for backwards compatibility.
 
-    Do not use in new code.  Instead, import MkdirFileLock from the
-    lockfile.mkdirfilelock module.
+    Do not use in new code.  Instead, import SQLiteLockFile from the
+    lockfile.mkdirlockfile module.
     """
-    import sqlitefilelock
-    return _fl_helper(sqlitefilelock.SQLiteFileLock, *args, **kwds)
+    import sqlitelockfile
+    return _fl_helper(sqlitelockfile.SQLiteLockFile, "lockfile.sqlitelockfile",
+                      *args, **kwds)
 
 if hasattr(os, "link"):
-    import linkfilelock as _lfl
-    FileLock = _lfl.LinkFileLock
+    import linklockfile as _llf
+    LockFile = _llf.LinkLockFile
 else:
-    import mkdirfilelock as _mfl
-    FileLock = _mfl.MkdirFileLock
+    import mkdirlockfile as _mlf
+    LockFile = _mlf.MkdirLockFile
+
+FileLock = LockFile
+

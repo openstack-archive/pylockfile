@@ -3,7 +3,7 @@ Index: lockfile/__init__.py
 --- lockfile/__init__.py	(revision 78)
 +++ lockfile/__init__.py	(working copy)
 @@ -24,16 +24,14 @@
- >>> lock = FileLock('somefile')
+ >>> lock = LockFile('somefile')
  >>> print lock.is_locked()
  False
 ->>> with lock:
@@ -12,7 +12,7 @@ Index: lockfile/__init__.py
 ->>> print lock.is_locked()
 -False
  
- >>> lock = FileLock('somefile')
+ >>> lock = LockFile('somefile')
  >>> # It is okay to lock twice from the same thread...
 ->>> with lock:
 -...     lock.acquire()

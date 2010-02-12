@@ -4,11 +4,11 @@ import os
 from lockfile import LockBase, LockFailed, NotLocked, NotMyLock, \
      LockTimeout, AlreadyLocked
 
-class LinkFileLock(LockBase):
+class LinkLockFile(LockBase):
     """Lock access to a file using atomic property of link(2).
 
-    >>> lock = LinkFileLock('somefile')
-    >>> lock = LinkFileLock('somefile', threaded=False)
+    >>> lock = LinkLockFile('somefile')
+    >>> lock = LinkLockFile('somefile', threaded=False)
     """
 
     def acquire(self, timeout=None):
