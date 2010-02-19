@@ -222,6 +222,7 @@ def _in_thread(func, *args, **kwargs):
     def _f():
         func(*args, **kwargs)
     t = threading.Thread(target=_f, name='/*/*')
+    t.setDaemon(True)
     t.start()
     return t
 
