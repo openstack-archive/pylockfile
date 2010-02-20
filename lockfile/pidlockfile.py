@@ -19,7 +19,8 @@ import sys
 import errno
 import time
 
-from . import LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock
+from . import (LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock,
+               LockTimeout)
 
 
 class PIDLockFile(LockBase):
