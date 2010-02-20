@@ -62,7 +62,7 @@ Index: lockfile/pidlockfile.py
 ===================================================================
 --- lockfile/pidlockfile.py	(revision 96)
 +++ lockfile/pidlockfile.py	(working copy)
-@@ -12,14 +12,12 @@
+@@ -12,15 +12,13 @@
  """ Lockfile behaviour implemented via Unix PID files.
      """
  
@@ -73,8 +73,10 @@ Index: lockfile/pidlockfile.py
  import errno
  import time
  
--from . import LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock
-+from lockfile import LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock
+-from . import (LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock,
+-               LockTimeout)
++from lockfile import (LockBase, AlreadyLocked, LockFailed, NotLocked,
++                      NotMyLock, LockTimeout)
  
  
  class PIDLockFile(LockBase):
