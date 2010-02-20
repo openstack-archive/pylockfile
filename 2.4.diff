@@ -1,3 +1,18 @@
+Index: lockfile/sqlitelockfile.py
+===================================================================
+--- lockfile/sqlitelockfile.py	(revision 93)
++++ lockfile/sqlitelockfile.py	(working copy)
+@@ -1,9 +1,7 @@
+-from __future__ import absolute_import, division
+-
+ import time
+ import os
+ 
+-from . import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
++from lockfile import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
+ 
+ class SQLiteLockFile(LockBase):
+     "Demonstrate SQL-based locking."
 Index: lockfile/__init__.py
 ===================================================================
 --- lockfile/__init__.py	(revision 93)
@@ -43,23 +58,6 @@ Index: lockfile/mkdirlockfile.py
  
  class MkdirLockFile(LockBase):
      """Lock file by creating a directory."""
-Index: lockfile/linklockfile.py
-===================================================================
---- lockfile/linklockfile.py	(revision 93)
-+++ lockfile/linklockfile.py	(working copy)
-@@ -1,10 +1,44 @@
--from __future__ import absolute_import
--
- import time
- import os
- 
--from . import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
--               AlreadyLocked)
-+from lockfile import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
-+                      AlreadyLocked)
- 
- class LinkLockFile(LockBase):
-     """Lock access to a file using atomic property of link(2).
 Index: lockfile/pidlockfile.py
 ===================================================================
 --- lockfile/pidlockfile.py	(revision 96)
@@ -80,3 +78,20 @@ Index: lockfile/pidlockfile.py
  
  
  class PIDLockFile(LockBase):
+Index: lockfile/linklockfile.py
+===================================================================
+--- lockfile/linklockfile.py	(revision 93)
++++ lockfile/linklockfile.py	(working copy)
+@@ -1,10 +1,8 @@
+-from __future__ import absolute_import
+-
+ import time
+ import os
+ 
+-from . import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
+-               AlreadyLocked)
++from lockfile import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
++                      AlreadyLocked)
+ 
+ class LinkLockFile(LockBase):
+     """Lock access to a file using atomic property of link(2).
