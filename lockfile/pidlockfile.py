@@ -147,7 +147,7 @@ def write_pid_to_pidfile(pidfile_path):
 
         """
     open_flags = (os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-    open_mode = 0x644
+    open_mode = 0644
     pidfile_fd = os.open(pidfile_path, open_flags, open_mode)
     pidfile = os.fdopen(pidfile_fd, 'w')
 
