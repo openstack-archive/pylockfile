@@ -1,7 +1,9 @@
+from __future__ import absolute_import, division
+
 import time
 import os
 
-from lockfile import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
+from . import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
 
 class SQLiteLockFile(LockBase):
     "Demonstrate SQL-based locking."

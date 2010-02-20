@@ -50,8 +50,6 @@ Exceptions:
             NotMyLock - File was locked but not by the current thread/process
 """
 
-from __future__ import division
-
 import sys
 import socket
 import os
