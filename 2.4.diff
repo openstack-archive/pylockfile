@@ -60,39 +60,3 @@ Index: lockfile/linklockfile.py
  
  class LinkLockFile(LockBase):
      """Lock access to a file using atomic property of link(2).
-+Index: lockfile/mkdirlockfile.py
-+===================================================================
-+--- lockfile/mkdirlockfile.py	(revision 93)
-++++ lockfile/mkdirlockfile.py	(working copy)
-+@@ -1,12 +1,10 @@
-+-from __future__ import absolute_import, division
-+-
-+ import time
-+ import os
-+ import sys
-+ import errno
-+ 
-+-from . import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
-+-               AlreadyLocked)
-++from lockfile import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
-++                      AlreadyLocked)
-+ 
-+ class MkdirLockFile(LockBase):
-+     """Lock file by creating a directory."""
-+Index: lockfile/linklockfile.py
-+===================================================================
-+--- lockfile/linklockfile.py	(revision 93)
-++++ lockfile/linklockfile.py	(working copy)
-+@@ -1,10 +1,8 @@
-+-from __future__ import absolute_import
-+-
-+ import time
-+ import os
-+ 
-+-from . import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
-+-               AlreadyLocked)
-++from lockfile import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
-++                      AlreadyLocked)
-+ 
-+ class LinkLockFile(LockBase):
-+     """Lock access to a file using atomic property of link(2).
