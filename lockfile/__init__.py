@@ -166,8 +166,11 @@ class LockBase:
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:
-            self.tname = "%x-" % (threading.current_thread().ident &
-                                  0xffffffff)
+            t = threading.current_thread()
+            # Thread objects in Python 2.4 and earlier do not have ident
+            # attrs.  Worm around that.
+            ident = getattr(t, "ident", hash(t))
+            self.tname = "%x-" % (ident & 0xffffffff)
         else:
             self.tname = ""
         dirname = os.path.dirname(self.lock_file)
