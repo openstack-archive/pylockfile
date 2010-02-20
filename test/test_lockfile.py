@@ -1,6 +1,6 @@
 import sys
 
-import lockfile.linklockfile, lockfile.mkdirlockfile
+import lockfile.linklockfile, lockfile.mkdirlockfile, lockfile.pidlockfile
 
 from compliancetest import ComplianceTest
     
@@ -9,6 +9,9 @@ class TestLinkLockFile(ComplianceTest):
 
 class TestMkdirLockFile(ComplianceTest):
     class_to_test = lockfile.mkdirlockfile.MkdirLockFile
+
+class TestPIDLockFile(ComplianceTest):
+    class_to_test = lockfile.pidlockfile.PIDLockFile
 
 # Check backwards compatibility
 class TestLinkFileLock(ComplianceTest):
