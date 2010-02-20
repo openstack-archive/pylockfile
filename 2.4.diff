@@ -60,3 +60,23 @@ Index: lockfile/linklockfile.py
  
  class LinkLockFile(LockBase):
      """Lock access to a file using atomic property of link(2).
+Index: lockfile/pidlockfile.py
+===================================================================
+--- lockfile/pidlockfile.py	(revision 96)
++++ lockfile/pidlockfile.py	(working copy)
+@@ -12,14 +12,12 @@
+ """ Lockfile behaviour implemented via Unix PID files.
+     """
+ 
+-from __future__ import absolute_import
+-
+ import os
+ import sys
+ import errno
+ import time
+ 
+-from . import LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock
++from lockfile import LockBase, AlreadyLocked, LockFailed, NotLocked, NotMyLock
+ 
+ 
+ class PIDLockFile(LockBase):
