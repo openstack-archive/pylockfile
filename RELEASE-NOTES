@@ -1,3 +1,11 @@
+Version 0.9.1
+=============
+
+* This release moves the source location to Google Code.
+
+* Threaded support is currently broken.  (It might not actually be broken.
+  It might just be the tests which are broken.)
+
 Version 0.9
 ===========
 
