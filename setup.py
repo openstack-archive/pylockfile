@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-V = "0.9"
+V = "0.9.1"
 
 from distutils.core import setup
 setup(name='lockfile',
       author='Skip Montanaro',
       author_email='skip@pobox.com',
-      url='http://smontanaro.dyndns.org/python/',
-      download_url=('http://smontanaro.dyndns.org/python/lockfile-%s.tar.gz' %
-                    V),
+      url='http://code.google.com/p/pylockfile/',
+      download_url=('http://code.google.com/p/pylockfile/downloads/'
+                    'detail?name=lockfile-%s.tar.gz' % V),
       version=V,
       description="Platform-independent file locking module",
       long_description=open("README").read(),
