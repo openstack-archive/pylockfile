@@ -31,8 +31,16 @@ class PIDLockFile(LockBase):
     the process ID (PID) of the process that acquired the lock.
 
     >>> lock = PIDLockFile('somefile')
-    >>> lock = PIDLockFile('somefile', threaded=False)
+    >>> lock = PIDLockFile('somefile')
     """
+
+    def __init__(self, path, threaded=False):
+        # pid lockfiles don't support threaded operation, so always force
+        # False as the threaded arg.
+        LockBase.__init__(self, path, False)
+        dirname = os.path.dirname(self.lock_file)
+        basename = os.path.split(self.path)[-1]
+        self.unique_name = self.path
 
     def read_pid(self):
         """ Get the PID from the lock file.
