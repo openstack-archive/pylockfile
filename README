@@ -18,6 +18,10 @@ Note: In version 0.9 the API changed in two significant ways:
 The previous module-level definitions of LinkFileLock, MkdirFileLock and
 SQLiteFileLock will be retained until the 1.0 release.
 
+Download from:
+
+    http://code.google.com/p/pylockfile/
+
 To install:
 
     python setup.py install
