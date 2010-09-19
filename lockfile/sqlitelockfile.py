@@ -8,11 +8,7 @@ from . import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
 class SQLiteLockFile(LockBase):
     "Demonstrate SQL-based locking."
 
-    import tempfile
-    _fd, testdb = tempfile.mkstemp()
-    os.close(_fd)
-    os.unlink(testdb)
-    del _fd, tempfile
+    testdb = None
 
     def __init__(self, path, threaded=True):
         """
@@ -22,6 +18,14 @@ class SQLiteLockFile(LockBase):
         LockBase.__init__(self, path, threaded)
         self.lock_file = unicode(self.lock_file)
         self.unique_name = unicode(self.unique_name)
+
+        if SQLiteLockFile.testdb is None:
+            import tempfile
+            _fd, testdb = tempfile.mkstemp()
+            os.close(_fd)
+            os.unlink(testdb)
+            del _fd, tempfile
+            SQLiteLockFile.testdb = testdb
 
         import sqlite3
         self.connection = sqlite3.connect(SQLiteLockFile.testdb)
