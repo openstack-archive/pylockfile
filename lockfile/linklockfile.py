@@ -39,9 +39,12 @@ class LinkLockFile(LockBase):
                     if timeout is not None and time.time() > end_time:
                         os.unlink(self.unique_name)
                         if timeout > 0:
-                            raise LockTimeout
+                            raise LockTimeout("Timeout waiting to acquire"
+                                              " lock for %s" %
+                                              self.path)
                         else:
-                            raise AlreadyLocked
+                            raise AlreadyLocked("%s is already locked" %
+                                                self.path)
                     time.sleep(timeout is not None and timeout/10 or 0.1)
             else:
                 # Link creation succeeded.  We're good to go.
@@ -49,9 +52,9 @@ class LinkLockFile(LockBase):
 
     def release(self):
         if not self.is_locked():
-            raise NotLocked
+            raise NotLocked("%s is not locked" % self.path)
         elif not os.path.exists(self.unique_name):
-            raise NotMyLock
+            raise NotMyLock("%s is locked, but not by me" % self.path)
         os.unlink(self.unique_name)
         os.unlink(self.lock_file)
 

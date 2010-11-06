@@ -82,12 +82,15 @@ class PIDLockFile(LockBase):
                     # The lock creation failed.  Maybe sleep a bit.
                     if timeout is not None and time.time() > end_time:
                         if timeout > 0:
-                            raise LockTimeout
+                            raise LockTimeout("Timeout waiting to acquire"
+                                              " lock for %s" %
+                                              self.path)
                         else:
-                            raise AlreadyLocked
+                            raise AlreadyLocked("%s is already locked" %
+                                                self.path)
                     time.sleep(timeout is not None and timeout/10 or 0.1)
                 else:
-                    raise LockFailed
+                    raise LockFailed("failed to create %s" % self.path)
             else:
                 return
 
@@ -99,9 +102,9 @@ class PIDLockFile(LockBase):
 
             """
         if not self.is_locked():
-            raise NotLocked
+            raise NotLocked("%s is not locked" % self.path)
         if not self.i_am_locking():
-            raise NotMyLock
+            raise NotMyLock("%s is locked, but not by me" % self.path)
         remove_existing_pidfile(self.path)
 
     def break_lock(self):
