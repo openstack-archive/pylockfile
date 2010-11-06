@@ -232,6 +232,10 @@ class LockBase:
         """
         self.release()
 
+    def __repr__(self):
+        return "<%s: %r -- %r>" % (self.__class__.__name__, self.unique_name,
+                                   self.path)
+
 def _fl_helper(cls, mod, *args, **kwds):
     warnings.warn("Import from %s module instead of lockfile package" % mod,
                   DeprecationWarning, stacklevel=2)
