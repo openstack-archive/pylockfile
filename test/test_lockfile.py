@@ -1,11 +1,17 @@
 import sys
 
-import lockfile.linklockfile, lockfile.mkdirlockfile, lockfile.pidlockfile
+import lockfile.linklockfile
+import lockfile.mkdirlockfile
+import lockfile.pidlockfile
+import lockfile.symlinklockfile
 
 from compliancetest import ComplianceTest
     
 class TestLinkLockFile(ComplianceTest):
     class_to_test = lockfile.linklockfile.LinkLockFile
+
+class TestSymlinkLockFile(ComplianceTest):
+    class_to_test = lockfile.symlinklockfile.SymlinkLockFile
 
 class TestMkdirLockFile(ComplianceTest):
     class_to_test = lockfile.mkdirlockfile.MkdirLockFile
