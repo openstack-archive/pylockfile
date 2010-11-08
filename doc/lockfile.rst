@@ -112,6 +112,12 @@ The following classes are provided:
    optional, but when set to :const:`True` locks will be distinguished
    between threads in the same process.
 
+.. class:: symlinklockfile.SymlinkLockFile(path, threaded=True)
+
+   This class uses the :func:`symlink(2)` system call as the basic lock
+   mechanism.  The parameters have the same meaning as for the
+   :class:`LinkLockFile` class.
+
 .. class:: mkdirlockfile.MkdirLockFile(path, threaded=True)
 
    This class uses the :func:`mkdir(2)` system call as the basic lock
@@ -129,6 +135,11 @@ The following classes are provided:
    This is the base class for all concrete implementations and is available
    at the lockfile package level so programmers can implement other locking
    schemes.
+
+.. function:: locked(path, timeout=None)
+
+   This function provides a decorator which insures the decorated function
+   is always called with the lock held.
 
 By default, the :const:`LockFile` object refers to the
 :class:`mkdirlockfile.MkdirLockFile` class on Windows.  On all other
@@ -236,6 +247,14 @@ If you don't want to wait forever, you might try::
 	    lock.acquire()
     print "I locked", lock.path
     lock.release()
+
+You can also insure that a lock is always held when appropriately decorated
+functions are called::
+
+    from lockfile import locked
+    @locked("/tmp/mylock")
+    def func(a, b):
+        return a + b
 
 Other Libraries
 ---------------
