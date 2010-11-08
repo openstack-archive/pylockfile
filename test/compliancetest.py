@@ -234,6 +234,12 @@ class ComplianceTest(object):
             lock.release()
         assert not lock.is_locked(), "still locked after release!"
 
+    def test_decorator(self):
+        @lockfile.locked(self._testfile())
+        def func(a, b):
+            return a + b
+        assert func(4, 3) == 7
+
 def _in_thread(func, *args, **kwargs):
     """Execute func(*args, **kwargs) after dt seconds. Helper for tests."""
     def _f():

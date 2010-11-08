@@ -57,6 +57,7 @@ import threading
 import time
 import urllib
 import warnings
+import functools
 
 # Work with PEP8 and non-PEP8 versions of threading module.
 if not hasattr(threading, "current_thread"):
@@ -67,7 +68,7 @@ if not hasattr(threading.Thread, "get_name"):
 __all__ = ['Error', 'LockError', 'LockTimeout', 'AlreadyLocked',
            'LockFailed', 'UnlockError', 'NotLocked', 'NotMyLock',
            'LinkLockFile', 'MkdirLockFile', 'SQLiteLockFile',
-           'LockBase']
+           'LockBase', 'locked']
 
 class Error(Exception):
     """
@@ -279,6 +280,30 @@ def SQLiteFileLock(*args, **kwds):
     import sqlitelockfile
     return _fl_helper(sqlitelockfile.SQLiteLockFile, "lockfile.sqlitelockfile",
                       *args, **kwds)
+
+def locked(path, timeout=None):
+    """Decorator which enables locks for decorated function.
+
+    Arguments:
+     - path: path for lockfile.
+     - timeout (optional): Timeout for acquiring lock.
+
+     Usage:
+         @locked('/var/run/myname', timeout=0)
+         def myname(...):
+             ...
+    """
+    def decor(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            lock = FileLock(path, timeout=timeout)
+            lock.acquire()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                lock.release()
+        return wrapper
+    return decor
 
 if hasattr(os, "link"):
     import linklockfile as _llf
