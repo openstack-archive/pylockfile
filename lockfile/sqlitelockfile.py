@@ -10,12 +10,12 @@ class SQLiteLockFile(LockBase):
 
     testdb = None
 
-    def __init__(self, path, threaded=True):
+    def __init__(self, path, threaded=True, timeout=None):
         """
         >>> lock = SQLiteLockFile('somefile')
         >>> lock = SQLiteLockFile('somefile', threaded=False)
         """
-        LockBase.__init__(self, path, threaded)
+        LockBase.__init__(self, path, threaded, timeout)
         self.lock_file = unicode(self.lock_file)
         self.unique_name = unicode(self.unique_name)
 
@@ -45,6 +45,7 @@ class SQLiteLockFile(LockBase):
             atexit.register(os.unlink, SQLiteLockFile.testdb)
 
     def acquire(self, timeout=None):
+        timeout = timeout or self.timeout
         end_time = time.time()
         if timeout is not None and timeout > 0:
             end_time += timeout

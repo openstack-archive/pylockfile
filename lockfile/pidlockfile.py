@@ -34,10 +34,10 @@ class PIDLockFile(LockBase):
     >>> lock = PIDLockFile('somefile')
     """
 
-    def __init__(self, path, threaded=False):
+    def __init__(self, path, threaded=False, timeout=None):
         # pid lockfiles don't support threaded operation, so always force
         # False as the threaded arg.
-        LockBase.__init__(self, path, False)
+        LockBase.__init__(self, path, False, timeout)
         dirname = os.path.dirname(self.lock_file)
         basename = os.path.split(self.path)[-1]
         self.unique_name = self.path
@@ -70,6 +70,7 @@ class PIDLockFile(LockBase):
         the lock could not be acquired.
         """
 
+        timeout = timeout or self.timeout
         end_time = time.time()
         if timeout is not None and timeout > 0:
             end_time += timeout

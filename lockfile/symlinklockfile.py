@@ -9,9 +9,9 @@ from . import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
 class SymlinkLockFile(LockBase):
     """Lock access to a file using symlink(2)."""
 
-    def __init__(self, path, threaded=True):
+    def __init__(self, path, threaded=True, timeout=None):
         # super(SymlinkLockFile).__init(...)
-        LockBase.__init__(self, path, threaded)
+        LockBase.__init__(self, path, threaded, timeout)
         # split it back!
         self.unique_name = os.path.split(self.unique_name)[1]
 
@@ -21,13 +21,13 @@ class SymlinkLockFile(LockBase):
         #    open(self.unique_name, "wb").close()
         #except IOError:
         #    raise LockFailed("failed to create %s" % self.unique_name)
-
+        timeout = timeout or self.timeout
         end_time = time.time()
         if timeout is not None and timeout > 0:
             end_time += timeout
 
         while True:
-            # Try and create a hard link to it.
+            # Try and create a symbolic link to it.
             try:
                 os.symlink(self.unique_name, self.lock_file)
             except OSError:

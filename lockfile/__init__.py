@@ -154,7 +154,7 @@ class NotMyLock(UnlockError):
 
 class LockBase:
     """Base class for platform-specific lock classes."""
-    def __init__(self, path, threaded=True):
+    def __init__(self, path, threaded=True, timeout=None):
         """
         >>> lock = LockBase('somefile')
         >>> lock = LockBase('somefile', threaded=False)
@@ -176,6 +176,7 @@ class LockBase:
                                         "%s%s.%s" % (self.hostname,
                                                      self.tname,
                                                      self.pid))
+        self.timeout = timeout
 
     def acquire(self, timeout=None):
         """

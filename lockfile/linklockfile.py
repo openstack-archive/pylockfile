@@ -19,6 +19,7 @@ class LinkLockFile(LockBase):
         except IOError:
             raise LockFailed("failed to create %s" % self.unique_name)
 
+        timeout = timeout or self.timeout
         end_time = time.time()
         if timeout is not None and timeout > 0:
             end_time += timeout

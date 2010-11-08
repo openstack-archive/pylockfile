@@ -94,11 +94,34 @@ class ComplianceTest(object):
         e2.set()
         t.join()
 
-##    def test_acquire_timeout_threaded(self):
-##        self._test_acquire_timeout_helper(True)
+    def test_acquire_timeout_threaded(self):
+        self._test_acquire_timeout_helper(True)
 
     def test_acquire_timeout_unthreaded(self):
         self._test_acquire_timeout_helper(False)
+
+    def _test_context_timeout_helper(self, tbool):
+        # Timeout test
+        e1, e2 = threading.Event(), threading.Event()
+        t = _in_thread(self._lock_wait_unlock, e1, e2)
+        e1.wait()                # wait for thread t to acquire lock
+        lock2 = lockfile.LockFile(self._testfile(), threaded=tbool,
+                                  timeout=0.2)
+        assert lock2.is_locked()
+        try:
+            lock2.acquire()
+        except lockfile.LockTimeout:
+            pass
+        else:
+            lock2.release()
+            raise AssertionError("did not raise LockTimeout in thread %s" %
+                                 threading.current_thread().get_name())
+
+        e2.set()
+        t.join()
+
+    def test_context_timeout_unthreaded(self):
+        self._test_context_timeout_helper(False)
 
     def _test_release_basic_helper(self, tbool):
         lock = lockfile.LockFile(self._testfile(), threaded=tbool)
