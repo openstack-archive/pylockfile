@@ -115,14 +115,14 @@ The following classes are provided:
 .. class:: symlinklockfile.SymlinkLockFile(path, threaded=True)
 
    This class uses the :func:`symlink(2)` system call as the basic lock
-   mechanism.  The parameters have the same meaning as for the
-   :class:`LinkLockFile` class.
+   mechanism.  The parameters have the same meaning and constraints as for
+   the :class:`LinkLockFile` class.
 
 .. class:: mkdirlockfile.MkdirLockFile(path, threaded=True)
 
    This class uses the :func:`mkdir(2)` system call as the basic lock
-   mechanism.  The parameters have the same meaning as for the
-   :class:`LinkLockFile` class.
+   mechanism.  The parameters have the same meaning and constraints as for
+   the :class:`LinkLockFile` class.
 
 .. class:: sqlitelockfile.SQLiteLockFile(path, threaded=True)
 
