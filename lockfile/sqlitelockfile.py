@@ -3,6 +3,11 @@ from __future__ import absolute_import, division
 import time
 import os
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
 from . import LockBase, NotLocked, NotMyLock, LockTimeout, AlreadyLocked
 
 class SQLiteLockFile(LockBase):
