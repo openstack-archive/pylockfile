@@ -1,3 +1,4 @@
+dist
 .tox
 *.pyc
 *~
