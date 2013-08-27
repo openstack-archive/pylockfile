@@ -66,6 +66,16 @@ class ComplianceTest(object):
                                  " thread %s" %
                                  threading.current_thread().get_name())
 
+        try:
+            lock2.acquire(timeout=0)
+        except lockfile.AlreadyLocked:
+            pass
+        else:
+            lock2.release()
+            raise AssertionError("did not raise AlreadyLocked in"
+                                 " thread %s" %
+                                 threading.current_thread().get_name())
+
         e2.set()          # tell thread t to release lock
         t.join()
 
