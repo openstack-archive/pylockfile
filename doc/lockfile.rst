@@ -229,7 +229,7 @@ This example is the "hello world" for the :mod:`lockfile` package::
 
 To use this with Python 2.4, you can execute::
 
-    frm lockfile import LockFile
+    from lockfile import LockFile
     lock = LockFile("/some/file/or/other")
     lock.acquire()
     print lock.path, 'is locked.'
