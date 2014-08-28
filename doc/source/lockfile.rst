@@ -20,14 +20,14 @@
 
 .. note::
 
-   The implementation uses the :keyword:`with` statement, both in the
-   tests and in the main code, so will only work out-of-the-box with Python
-   2.5 or later.  However, the use of the :keyword:`with` statement is
-   minimal, so if you apply the patch in the included 2.4.diff file you can
-   use it with Python 2.4.  It's possible that it will work in Python 2.3
-   with that patch applied as well, though the doctest code relies on APIs
-   new in 2.4, so will have to be rewritten somewhat to allow testing on
-   2.3.  As they say, patches welcome. ``;-)``
+   The implementation uses the `with` statement, both in the tests and in the
+   main code, so will only work out-of-the-box with Python 2.5 or later.
+   However, the use of the `with` statement is minimal, so if you apply the
+   patch in the included 2.4.diff file you can use it with Python 2.4. It's
+   possible that it will work in Python 2.3 with that patch applied as well,
+   though the doctest code relies on APIs new in 2.4, so will have to be
+   rewritten somewhat to allow testing on 2.3. As they say, patches welcome.
+   ``;-)``
 
 The :mod:`lockfile` package exports a :class:`LockFile` class which provides
 a simple API for locking files.  Unlike the Windows :func:`msvcrt.locking`
@@ -173,14 +173,13 @@ and HOSTNAME-THREADID-PID will be an empty file within that directory.
 LockFile Objects
 ----------------
 
-:class:`LockFile` objects support the :term:`context manager` protocol used
-by the statement:`with` statement.  The timeout option is not supported when
-used in this fashion.  While support for timeouts could be implemented,
-there is no support for handling the eventual :exc:`Timeout` exceptions
-raised by the :func:`__enter__` method, so you would have to protect the
-:keyword:`with` statement with a :keyword:`try` statement.  The resulting
-construct would not be any simpler than just using a :keyword:`try`
-statement in the first place.
+:class:`LockFile` objects support the `context manager` protocol used by the
+statement:`with` statement. The timeout option is not supported when used in
+this fashion. While support for timeouts could be implemented, there is no
+support for handling the eventual :exc:`Timeout` exceptions raised by the
+:func:`__enter__` method, so you would have to protect the `with` statement with
+a `try` statement. The resulting construct would not be any simpler than just
+using a `try` statement in the first place.
 
 :class:`LockFile` has the following user-visible methods:
 
