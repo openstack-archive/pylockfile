@@ -234,7 +234,7 @@ To use this with Python 2.4, you can execute::
     print lock.path, 'is locked.'
     lock.release()
 
-If you don't want to wait forever, you might try::	
+If you don't want to wait forever, you might try::
 
     from lockfile import LockFile
     lock = LockFile("/some/file/or/other")
@@ -272,4 +272,4 @@ Contacting the Author
 ---------------------
 
 If you encounter any problems with ``lockfile``, would like help or want to
-submit a patch, contact me directly: Skip Montanaro (skip@pobox.com).
+submit a patch, check http://launchpad.net/pylockfile
