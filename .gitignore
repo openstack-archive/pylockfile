@@ -7,3 +7,5 @@ AUTHORS
 ChangeLog
 *.egg
 pylockfile.egg-info
+cover
+.coverage
