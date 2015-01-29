@@ -18,11 +18,10 @@ Note: In version 0.9 the API changed in two significant ways:
 The previous module-level definitions of LinkFileLock, MkdirFileLock and
 SQLiteFileLock will be retained until the 1.0 release.
 
-Available via Git:
-
-    git://git.openstack.org/openstack/pylockfile
-    https://git.openstack.org/openstack/pylockfile
-
 To install:
 
     python setup.py install
+
+* Documentation: http://docs.openstack.org/developer/pylockfile
+* Source: http://git.openstack.org/cgit/openstack/pylockfile
+* Bugs: http://bugs.launchpad.net/pylockfile
