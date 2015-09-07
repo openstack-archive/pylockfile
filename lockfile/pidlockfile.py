@@ -89,7 +89,7 @@ class PIDLockFile(LockBase):
                         else:
                             raise AlreadyLocked("%s is already locked" %
                                                 self.path)
-                    time.sleep(timeout is not None and timeout/10 or 0.1)
+                    time.sleep(timeout/10. if timeout > 0 else 0.1)
                 else:
                     raise LockFailed("failed to create %s" % self.path)
             else:
