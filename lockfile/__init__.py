@@ -70,7 +70,7 @@ if not hasattr(threading.Thread, "get_name"):
 
 __all__ = ['Error', 'LockError', 'LockTimeout', 'AlreadyLocked',
            'LockFailed', 'UnlockError', 'NotLocked', 'NotMyLock',
-           'LinkLockFile', 'MkdirLockFile', 'SQLiteLockFile',
+           'LinkFileLock', 'MkdirFileLock', 'SQLiteFileLock',
            'LockBase', 'locked']
 
 class Error(Exception):
