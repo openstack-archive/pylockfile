@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import errno
+import shutil
 
 from . import (LockBase, LockFailed, NotLocked, NotMyLock, LockTimeout,
                AlreadyLocked)
@@ -67,7 +68,7 @@ class MkdirLockFile(LockBase):
         elif not os.path.exists(self.unique_name):
             raise NotMyLock("%s is locked, but not by me" % self.path)
         os.unlink(self.unique_name)
-        os.rmdir(self.lock_file)
+        shutil.rmtree(self.lock_file)
 
     def is_locked(self):
         return os.path.exists(self.lock_file)
@@ -78,6 +79,4 @@ class MkdirLockFile(LockBase):
 
     def break_lock(self):
         if os.path.exists(self.lock_file):
-            for name in os.listdir(self.lock_file):
-                os.unlink(os.path.join(self.lock_file, name))
-            os.rmdir(self.lock_file)
+            shutil.rmtree(self.lock_file)
