@@ -7,6 +7,13 @@
 .. moduleauthor:: Skip Montanaro <skip@pobox.com>
 .. sectionauthor:: Skip Montanaro <skip@pobox.com>
 
+.. warning::
+
+   This package is **deprecated**. It is highly preferred that instead of
+   using this code base that instead `fasteners`_ or `oslo.concurrency`_ is
+   used instead. For any questions or comments or further help needed
+   please email `openstack-dev`_ and prefix your email subject
+   with ``[oslo][pylockfile]`` (for a faster response).
 
 .. note::
 
@@ -273,3 +280,8 @@ Contacting the Author
 
 If you encounter any problems with ``lockfile``, would like help or want to
 submit a patch, check http://launchpad.net/pylockfile
+
+
+.. _fasteners: http://fasteners.readthedocs.org/
+.. _openstack-dev: mailto:openstack-dev@lists.openstack.org
+.. _oslo.concurrency: http://docs.openstack.org/developer/oslo.concurrency/
