@@ -37,8 +37,6 @@ class PIDLockFile(LockBase):
         # pid lockfiles don't support threaded operation, so always force
         # False as the threaded arg.
         LockBase.__init__(self, path, False, timeout)
-        dirname = os.path.dirname(self.lock_file)
-        basename = os.path.split(self.path)[-1]
         self.unique_name = self.path
 
     def read_pid(self):
