@@ -4,6 +4,7 @@ import shutil
 
 import lockfile
 
+
 class ComplianceTest(object):
     def __init__(self):
         self.saved_class = lockfile.LockFile
@@ -38,8 +39,8 @@ class ComplianceTest(object):
         lock.release()
         assert not lock.is_locked()
 
-##    def test_acquire_basic_threaded(self):
-##        self._test_acquire_helper(True)
+#     def test_acquire_basic_threaded(self):
+#         self._test_acquire_helper(True)
 
     def test_acquire_basic_unthreaded(self):
         self._test_acquire_helper(False)
@@ -79,11 +80,11 @@ class ComplianceTest(object):
         e2.set()          # tell thread t to release lock
         t.join()
 
-##    def test_acquire_no_timeout_threaded(self):
-##        self._test_acquire_no_timeout_helper(True)
+#     def test_acquire_no_timeout_threaded(self):
+#         self._test_acquire_no_timeout_helper(True)
 
-##    def test_acquire_no_timeout_unthreaded(self):
-##        self._test_acquire_no_timeout_helper(False)
+#     def test_acquire_no_timeout_unthreaded(self):
+#         self._test_acquire_no_timeout_helper(False)
 
     def _test_acquire_timeout_helper(self, tbool):
         # Timeout test
@@ -150,27 +151,27 @@ class ComplianceTest(object):
         else:
             raise AssertionError('erroneously unlocked file')
 
-##    def test_release_basic_threaded(self):
-##        self._test_release_basic_helper(True)
+#     def test_release_basic_threaded(self):
+#         self._test_release_basic_helper(True)
 
     def test_release_basic_unthreaded(self):
         self._test_release_basic_helper(False)
 
-##    def test_release_from_thread(self):
-##        e1, e2 = threading.Event(), threading.Event()
-##        t = _in_thread(self._lock_wait_unlock, e1, e2)
-##        e1.wait()
-##        lock2 = lockfile.LockFile(self._testfile(), threaded=False)
-##        assert not lock2.i_am_locking()
-##        try:
-##            lock2.release()
-##        except lockfile.NotMyLock:
-##            pass
-##        else:
-##            raise AssertionError('erroneously unlocked a file locked'
-##                                 ' by another thread.')
-##        e2.set()
-##        t.join()
+#     def test_release_from_thread(self):
+#         e1, e2 = threading.Event(), threading.Event()
+#         t = _in_thread(self._lock_wait_unlock, e1, e2)
+#         e1.wait()
+#         lock2 = lockfile.LockFile(self._testfile(), threaded=False)
+#         assert not lock2.i_am_locking()
+#         try:
+#             lock2.release()
+#         except lockfile.NotMyLock:
+#             pass
+#         else:
+#             raise AssertionError('erroneously unlocked a file locked'
+#                                  ' by another thread.')
+#         e2.set()
+#         t.join()
 
     def _test_is_locked_helper(self, tbool):
         lock = lockfile.LockFile(self._testfile(), threaded=tbool)
@@ -179,14 +180,14 @@ class ComplianceTest(object):
         lock.release()
         assert not lock.is_locked(), "still locked after release!"
 
-##    def test_is_locked_threaded(self):
-##        self._test_is_locked_helper(True)
+#     def test_is_locked_threaded(self):
+#         self._test_is_locked_helper(True)
 
     def test_is_locked_unthreaded(self):
         self._test_is_locked_helper(False)
 
-##    def test_i_am_locking_threaded(self):
-##        self._test_i_am_locking_helper(True)
+#     def test_i_am_locking_threaded(self):
+#         self._test_i_am_locking_helper(True)
 
     def test_i_am_locking_unthreaded(self):
         self._test_i_am_locking_helper(False)
@@ -219,8 +220,8 @@ class ComplianceTest(object):
         else:
             raise AssertionError('break lock failed')
 
-##    def test_break_lock_threaded(self):
-##        self._test_break_lock_helper(True)
+#     def test_break_lock_threaded(self):
+#         self._test_break_lock_helper(True)
 
     def test_break_lock_unthreaded(self):
         self._test_break_lock_helper(False)
@@ -230,8 +231,8 @@ class ComplianceTest(object):
         l = lockfile.LockFile(self._testfile())
         l.acquire()
         try:
-            event1.set()  # we're in,
-            event2.wait() # wait for boss's permission to leave
+            event1.set()   # we're in,
+            event2.wait()  # wait for boss's permission to leave
         finally:
             l.release()
 
@@ -250,6 +251,7 @@ class ComplianceTest(object):
             return a + b
         assert func(4, 3) == 7
 
+
 def _in_thread(func, *args, **kwargs):
     """Execute func(*args, **kwargs) after dt seconds. Helper for tests."""
     def _f():
@@ -258,4 +260,3 @@ def _in_thread(func, *args, **kwargs):
     t.setDaemon(True)
     t.start()
     return t
-
