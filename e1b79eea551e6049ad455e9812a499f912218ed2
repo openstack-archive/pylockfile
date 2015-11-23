@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Victor Stinner <vstinner@redhat.com>
+Workflow+1: Victor Stinner <vstinner@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 23 Nov 2015 16:05:26 +0000
+Reviewed-on: https://review.openstack.org/246240
+Project: openstack/pylockfile
+Branch: refs/heads/master
