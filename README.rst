@@ -1,3 +1,9 @@
+Note: This package is **deprecated**. It is highly preferred that instead of
+using this code base that instead `fasteners`_ or `oslo.concurrency`_ is
+used instead. For any questions or comments or further help needed
+please email `openstack-dev`_ and prefix your email subject
+with ``[oslo][pylockfile]`` (for a faster response).
+
 The lockfile package exports a LockFile class which provides a simple API for
 locking files.  Unlike the Windows msvcrt.locking function, the fcntl.lockf
 and flock functions, and the deprecated posixfile module, the API is
