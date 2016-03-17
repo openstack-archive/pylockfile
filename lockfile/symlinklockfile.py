@@ -62,8 +62,8 @@ class SymlinkLockFile(LockBase):
         return os.path.islink(self.lock_file)
 
     def i_am_locking(self):
-        return (os.path.islink(self.lock_file)
-                and os.readlink(self.lock_file) == self.unique_name)
+        return (os.path.islink(self.lock_file) and
+                os.readlink(self.lock_file) == self.unique_name)
 
     def break_lock(self):
         if os.path.islink(self.lock_file):  # exists && link
