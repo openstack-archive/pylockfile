@@ -1,8 +1,8 @@
 .. warning::
 
    **This package is deprecated**. It is highly preferred that instead of
-   using this code base that instead `fasteners`_ or `oslo.concurrency`_ is
-   used instead.
+   using this code base, `fasteners`_ or `oslo.concurrency`_ is
+   used.
 
 The lockfile package exports a ``LockFile`` class which provides a simple API
 for locking files.  Unlike the Windows ``msvcrt.locking`` function, the
